@@ -543,39 +543,39 @@ class ScriptMgr
 
         // atomic op counter for active scripts amount
         ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
+        
+        void (* m_pOnInitScriptLibrary)();
+        void (* m_pOnFreeScriptLibrary)();
+        const char* (* m_pGetScriptLibraryVersion)();
 
-        void (MANGOS_IMPORT* m_pOnInitScriptLibrary)();
-        void (MANGOS_IMPORT* m_pOnFreeScriptLibrary)();
-        const char* (MANGOS_IMPORT* m_pGetScriptLibraryVersion)();
+        CreatureAI* (* m_pGetCreatureAI)(Creature*);
+        GameObjectAI* (* m_pGetGameObjectAI)(GameObject*);
+        InstanceData* (* m_pCreateInstanceData)(Map*);
 
-        CreatureAI* (MANGOS_IMPORT* m_pGetCreatureAI)(Creature*);
-        GameObjectAI* (MANGOS_IMPORT* m_pGetGameObjectAI)(GameObject*);
-        InstanceData* (MANGOS_IMPORT* m_pCreateInstanceData)(Map*);
-
-        bool (MANGOS_IMPORT* m_pOnGossipHello)(Player*, Creature*);
-        bool (MANGOS_IMPORT* m_pOnGOGossipHello)(Player*, GameObject*);
-        bool (MANGOS_IMPORT* m_pOnGossipSelect)(Player*, Creature*, uint32, uint32);
-        bool (MANGOS_IMPORT* m_pOnGOGossipSelect)(Player*, GameObject*, uint32, uint32);
-        bool (MANGOS_IMPORT* m_pOnGossipSelectWithCode)(Player*, Creature*, uint32, uint32, const char*);
-        bool (MANGOS_IMPORT* m_pOnGOGossipSelectWithCode)(Player*, GameObject*, uint32, uint32, const char*);
-        bool (MANGOS_IMPORT* m_pOnQuestAccept)(Player*, Creature*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnGOQuestAccept)(Player*, GameObject*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnItemQuestAccept)(Player*, Item*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnQuestComplete)(Player*, Creature*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnGOQuestComplete)(Player*, GameObject*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnQuestRewarded)(Player*, Creature*, Quest const*);
-        bool (MANGOS_IMPORT* m_pOnGOQuestRewarded)(Player*, GameObject*, Quest const*);
-        uint32(MANGOS_IMPORT* m_pGetNPCDialogStatus)(Player*, Creature*);
-        uint32(MANGOS_IMPORT* m_pGetGODialogStatus)(Player*, GameObject*);
-        bool (MANGOS_IMPORT* m_pOnGOUse)(Player*, GameObject*);
-        bool (MANGOS_IMPORT* m_pOnItemUse)(Player*, Item*, SpellCastTargets const&);
-        bool (MANGOS_IMPORT* m_pOnAreaTrigger)(Player*, AreaTriggerEntry const*);
-        bool (MANGOS_IMPORT* m_pOnProcessEvent)(uint32, Object*, Object*, bool);
-        bool (MANGOS_IMPORT* m_pOnEffectDummyCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
-        bool (MANGOS_IMPORT* m_pOnEffectDummyGO)(Unit*, uint32, SpellEffectIndex, GameObject*, ObjectGuid);
-        bool (MANGOS_IMPORT* m_pOnEffectDummyItem)(Unit*, uint32, SpellEffectIndex, Item*, ObjectGuid);
-        bool (MANGOS_IMPORT* m_pOnEffectScriptEffectCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
-        bool (MANGOS_IMPORT* m_pOnAuraDummy)(Aura const*, bool);
+        bool (* m_pOnGossipHello)(Player*, Creature*);
+        bool (* m_pOnGOGossipHello)(Player*, GameObject*);
+        bool (* m_pOnGossipSelect)(Player*, Creature*, uint32, uint32);
+        bool (* m_pOnGOGossipSelect)(Player*, GameObject*, uint32, uint32);
+        bool (* m_pOnGossipSelectWithCode)(Player*, Creature*, uint32, uint32, const char*);
+        bool (* m_pOnGOGossipSelectWithCode)(Player*, GameObject*, uint32, uint32, const char*);
+        bool (* m_pOnQuestAccept)(Player*, Creature*, Quest const*);
+        bool (* m_pOnGOQuestAccept)(Player*, GameObject*, Quest const*);
+        bool (* m_pOnItemQuestAccept)(Player*, Item*, Quest const*);
+        bool (* m_pOnQuestComplete)(Player*, Creature*, Quest const*);
+        bool (* m_pOnGOQuestComplete)(Player*, GameObject*, Quest const*);
+        bool (* m_pOnQuestRewarded)(Player*, Creature*, Quest const*);
+        bool (* m_pOnGOQuestRewarded)(Player*, GameObject*, Quest const*);
+        uint32(* m_pGetNPCDialogStatus)(Player*, Creature*);
+        uint32(* m_pGetGODialogStatus)(Player*, GameObject*);
+        bool (* m_pOnGOUse)(Player*, GameObject*);
+        bool (* m_pOnItemUse)(Player*, Item*, SpellCastTargets const&);
+        bool (* m_pOnAreaTrigger)(Player*, AreaTriggerEntry const*);
+        bool (* m_pOnProcessEvent)(uint32, Object*, Object*, bool);
+        bool (* m_pOnEffectDummyCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
+        bool (* m_pOnEffectDummyGO)(Unit*, uint32, SpellEffectIndex, GameObject*, ObjectGuid);
+        bool (* m_pOnEffectDummyItem)(Unit*, uint32, SpellEffectIndex, Item*, ObjectGuid);
+        bool (* m_pOnEffectScriptEffectCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
+        bool (* m_pOnAuraDummy)(Aura const*, bool);
 };
 
 // Starters for events
@@ -583,10 +583,10 @@ bool StartEvents_Event(Map* map, uint32 id, Object* source, Object* target, bool
 
 #define sScriptMgr MaNGOS::Singleton<ScriptMgr>::Instance()
 
-MANGOS_DLL_SPEC uint32 GetAreaTriggerScriptId(uint32 triggerId);
-MANGOS_DLL_SPEC uint32 GetEventIdScriptId(uint32 eventId);
-MANGOS_DLL_SPEC uint32 GetScriptId(const char* name);
-MANGOS_DLL_SPEC char const* GetScriptName(uint32 id);
-MANGOS_DLL_SPEC uint32 GetScriptIdsCount();
+uint32 GetAreaTriggerScriptId(uint32 triggerId);
+uint32 GetEventIdScriptId(uint32 eventId);
+uint32 GetScriptId(const char* name);
+char const* GetScriptName(uint32 id);
+uint32 GetScriptIdsCount();
 
 #endif

@@ -35,7 +35,7 @@
 #endif
 
 // MySQL prepared statement class
-class MANGOS_DLL_SPEC MySqlPreparedStatement : public SqlPreparedStatement
+class MySqlPreparedStatement : public SqlPreparedStatement
 {
     public:
         MySqlPreparedStatement(const std::string& fmt, SqlConnection& conn, MYSQL* mysql);
@@ -66,7 +66,7 @@ class MANGOS_DLL_SPEC MySqlPreparedStatement : public SqlPreparedStatement
         MYSQL_RES* m_pResultMetadata;
 };
 
-class MANGOS_DLL_SPEC MySQLConnection : public SqlConnection
+class MySQLConnection : public SqlConnection
 {
     public:
         MySQLConnection(Database& db) : SqlConnection(db), mMysql(NULL) {}
@@ -96,7 +96,7 @@ class MANGOS_DLL_SPEC MySQLConnection : public SqlConnection
         MYSQL* mMysql;
 };
 
-class MANGOS_DLL_SPEC DatabaseMysql : public Database
+class DatabaseMysql : public Database
 {
         friend class MaNGOS::OperatorNew<DatabaseMysql>;
 

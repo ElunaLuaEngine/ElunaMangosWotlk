@@ -49,7 +49,7 @@ enum InstanceConditionIDs                                   // Suggested values 
     INSTANCE_CONDITION_ID_ULDUAR            = 33113,
 };
 
-class MANGOS_DLL_SPEC InstanceData
+class InstanceData
 {
     public:
 

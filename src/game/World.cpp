@@ -1347,7 +1347,7 @@ void World::SetInitialWorldSettings()
     sEventAIMgr.LoadCreatureEventAI_Scripts();
 
     sLog.outString("Initializing Scripts...");
-    switch (sScriptMgr.LoadScriptLibrary(MANGOS_SCRIPT_NAME))
+    switch (sScriptMgr.LoadScriptLibrary(""))
     {
         case SCRIPT_LOAD_OK:
             sLog.outString("Scripting library loaded.");

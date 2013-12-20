@@ -44,11 +44,11 @@ class WorldTimer
         }
 
         // get last world tick time
-        static MANGOS_DLL_SPEC uint32 tickTime();
+        static uint32 tickTime();
         // get previous world tick time
-        static MANGOS_DLL_SPEC uint32 tickPrevTime();
+        static uint32 tickPrevTime();
         // tick world timer
-        static MANGOS_DLL_SPEC uint32 tick();
+        static uint32 tick();
 
     private:
         WorldTimer();
@@ -57,8 +57,8 @@ class WorldTimer
         // analogue to getMSTime() but it persists m_SystemTickTime
         static uint32 getMSTime_internal(bool savetime = false);
 
-        static MANGOS_DLL_SPEC uint32 m_iTime;
-        static MANGOS_DLL_SPEC uint32 m_iPrevTime;
+        static uint32 m_iTime;
+        static uint32 m_iPrevTime;
 };
 
 class IntervalTimer
