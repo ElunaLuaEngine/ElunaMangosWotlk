@@ -26,6 +26,7 @@
 
 enum Difficulty;
 enum DuelCompleteType;
+enum GroupType;
 enum InventoryResult;
 struct AreaTriggerEntry;
 struct SpellEntry;
@@ -492,6 +493,13 @@ class GroupScript : public ScriptObject
         GroupScript(const char* name);
 
     public:
+        // Group
+        virtual void OnAddMember(Group* group, uint64 guid) { }
+        virtual void OnInviteMember(Group* group, uint64 guid) { }
+        virtual void OnRemoveMember(Group* group, uint64 guid, uint8 method, uint64 kicker, const char* reason) { }
+        virtual void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid) { }
+        virtual void OnDisband(Group* group) { }
+        virtual void OnCreate(Group* group, uint64 leaderGuid, GroupType groupType) { }
 };
 
 class GuildScript : public ScriptObject
@@ -664,6 +672,13 @@ class ScriptMgr
         void OnResurrect(Player* player);
         void OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uint32 action, const char* code);
 
+        /* GroupScript */
+        void OnAddMember(Group* group, uint64 guid);
+        void OnInviteMember(Group* group, uint64 guid);
+        void OnRemoveMember(Group* group, uint64 guid, uint8 method, uint64 kicker, const char* reason);
+        void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnDisband(Group* group);
+        void OnCreate(Group* group, uint64 leaderGuid, GroupType groupType);
 
         /* Old hooks */
 

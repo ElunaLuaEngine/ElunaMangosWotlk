@@ -165,7 +165,7 @@ bool Group::Create(ObjectGuid guid, const char* name)
         CharacterDatabase.CommitTransaction();
 
     // Trigger OnCreate event
-    sHookMgr.OnCreate(this, m_leaderGuid, m_groupType);
+    sScriptMgr.OnCreate(this, m_leaderGuid, m_groupType);
 
     return true;
 }
@@ -260,7 +260,7 @@ bool Group::AddInvite(Player* player)
     player->SetGroupInvite(this);
 
     // Trigger OnInviteMember event
-    sHookMgr.OnInviteMember(this, player->GetObjectGuid());
+    sScriptMgr.OnInviteMember(this, player->GetObjectGuid());
 
     return true;
 }
@@ -344,7 +344,7 @@ bool Group::AddMember(ObjectGuid guid, const char* name)
         UpdatePlayerOutOfRange(player);
 
         // Trigger OnAddMember event
-        sHookMgr.OnAddMember(this, player->GetObjectGuid());
+        sScriptMgr.OnAddMember(this, player->GetObjectGuid());
 
         // quest related GO state dependent from raid membership
         if (isRaidGroup())
@@ -405,7 +405,7 @@ uint32 Group::RemoveMember(ObjectGuid guid, uint8 method)
         Disband(true);
 
     // Trigger OnRemoveMember event
-    sHookMgr.OnRemoveMember(this, guid, method, NULL, NULL); // Kicker and Reason not a part of Mangos, implement?
+    sScriptMgr.OnRemoveMember(this, guid, method, NULL, NULL); // Kicker and Reason not a part of Mangos, implement?
 
     return m_memberSlots.size();
 }
@@ -417,7 +417,7 @@ void Group::ChangeLeader(ObjectGuid guid)
         return;
 
     // Trigger OnChangeLeader event
-    sHookMgr.OnChangeLeader(this, guid, GetLeaderGuid());
+    sScriptMgr.OnChangeLeader(this, guid, GetLeaderGuid());
 
     _setLeader(guid);
 
@@ -495,7 +495,7 @@ void Group::Disband(bool hideDestroy)
     }
 
     // Trigger OnDisband event
-    sHookMgr.OnDisband(this);
+    sScriptMgr.OnDisband(this);
 
     m_leaderGuid.Clear();
     m_leaderName = "";

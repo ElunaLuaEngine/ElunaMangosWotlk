@@ -2411,6 +2411,31 @@ void ScriptMgr::OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uin
     }
 }
 
+void ScriptMgr::OnAddMember(Group* group, uint64 guid)
+{
+    FOREACH_SCRIPT(GroupScript)->OnAddMember(group, guid);
+}
+void ScriptMgr::OnInviteMember(Group* group, uint64 guid)
+{
+    FOREACH_SCRIPT(GroupScript)->OnInviteMember(group, guid);
+}
+void ScriptMgr::OnRemoveMember(Group* group, uint64 guid, uint8 method, uint64 kicker, const char* reason)
+{
+    FOREACH_SCRIPT(GroupScript)->OnRemoveMember(group, guid, method, kicker, reason);
+}
+void ScriptMgr::OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid)
+{
+    FOREACH_SCRIPT(GroupScript)->OnChangeLeader(group, newLeaderGuid, oldLeaderGuid);
+}
+void ScriptMgr::OnDisband(Group* group)
+{
+    FOREACH_SCRIPT(GroupScript)->OnDisband(group);
+}
+void ScriptMgr::OnCreate(Group* group, uint64 leaderGuid, GroupType groupType)
+{
+    FOREACH_SCRIPT(GroupScript)->OnCreate(group, leaderGuid, groupType);
+}
+
 template<class S> std::map<uint32, S*> ScriptStore<S>::scriptMap;
 template<class S> uint32 ScriptStore<S>::_counter = 0;
 
