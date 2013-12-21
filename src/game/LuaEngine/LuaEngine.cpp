@@ -51,7 +51,7 @@ extern void AddElunaScripts();
 void StartEluna(bool restart)
 {
     if (!restart)
-        AddElunaScripts();
+        AddElunaScripts(); // move to scriptmgr LoadScriptLibrary
     else
     {
         sHookMgr.OnEngineRestart();

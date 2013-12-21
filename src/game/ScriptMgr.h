@@ -625,81 +625,6 @@ class ScriptMgr
         bool IsScriptScheduled() const { return m_scheduledScripts > 0; }
         static bool CanSpellEffectStartDBScript(SpellEntry const* spellinfo, SpellEffectIndex effIdx);
 
-        CreatureAI* GetCreatureAI(Creature* pCreature);
-        GameObjectAI* GetGameObjectAI(GameObject* pGameObject);
-        InstanceData* CreateInstanceData(Map* pMap);
-
-        bool OnGossipHello(Player* pPlayer, Creature* pCreature);
-        bool OnGossipHello(Player* pPlayer, GameObject* pGameObject);
-        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code);
-        bool OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code);
-        bool OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
-        bool OnQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
-        bool OnQuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool OnQuestComplete(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
-        bool OnQuestRewarded(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool OnQuestRewarded(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest);
-        uint32 GetDialogStatus(Player* pPlayer, Creature* pCreature);
-        uint32 GetDialogStatus(Player* pPlayer, GameObject* pGameObject);
-        bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject);
-        bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
-        bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry);
-        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid);
-        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, GameObject* pTarget, ObjectGuid originalCasterGuid);
-        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Item* pTarget, ObjectGuid originalCasterGuid);
-        bool OnEffectScriptEffect(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid);
-        bool OnAuraDummy(Aura const* pAura, bool apply);
-        bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart);
-
-    private:
-        void CollectPossibleEventIds(std::set<uint32>& eventIds);
-        void LoadScripts(ScriptMapMapName& scripts, const char* tablename);
-        void CheckScriptTexts(ScriptMapMapName const& scripts, std::set<int32>& ids);
-
-        typedef std::vector<std::string> ScriptNameMap;
-        typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
-        typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
-
-        AreaTriggerScriptMap    m_AreaTriggerScripts;
-        EventIdScriptMap        m_EventIdScripts;
-
-        ScriptNameMap           m_scriptNames;
-
-        // atomic op counter for active scripts amount
-        ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
-
-        CreatureAI* (* m_pGetCreatureAI)(Creature*);
-        GameObjectAI* (* m_pGetGameObjectAI)(GameObject*);
-        InstanceData* (* m_pCreateInstanceData)(Map*);
-
-        bool (* m_pOnGossipHello)(Player*, Creature*);
-        bool (* m_pOnGOGossipHello)(Player*, GameObject*);
-        bool (* m_pOnGossipSelect)(Player*, Creature*, uint32, uint32);
-        bool (* m_pOnGOGossipSelect)(Player*, GameObject*, uint32, uint32);
-        bool (* m_pOnGossipSelectWithCode)(Player*, Creature*, uint32, uint32, const char*);
-        bool (* m_pOnGOGossipSelectWithCode)(Player*, GameObject*, uint32, uint32, const char*);
-        bool (* m_pOnQuestAccept)(Player*, Creature*, Quest const*);
-        bool (* m_pOnGOQuestAccept)(Player*, GameObject*, Quest const*);
-        bool (* m_pOnItemQuestAccept)(Player*, Item*, Quest const*);
-        bool (* m_pOnQuestComplete)(Player*, Creature*, Quest const*);
-        bool (* m_pOnGOQuestComplete)(Player*, GameObject*, Quest const*);
-        bool (* m_pOnQuestRewarded)(Player*, Creature*, Quest const*);
-        bool (* m_pOnGOQuestRewarded)(Player*, GameObject*, Quest const*);
-        uint32(* m_pGetNPCDialogStatus)(Player*, Creature*);
-        uint32(* m_pGetGODialogStatus)(Player*, GameObject*);
-        bool (* m_pOnGOUse)(Player*, GameObject*);
-        bool (* m_pOnItemUse)(Player*, Item*, SpellCastTargets const&);
-        bool (* m_pOnAreaTrigger)(Player*, AreaTriggerEntry const*);
-        bool (* m_pOnEffectDummyCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
-        bool (* m_pOnEffectDummyGO)(Unit*, uint32, SpellEffectIndex, GameObject*, ObjectGuid);
-        bool (* m_pOnEffectDummyItem)(Unit*, uint32, SpellEffectIndex, Item*, ObjectGuid);
-        bool (* m_pOnEffectScriptEffectCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
-        bool (* m_pOnAuraDummy)(Aura const*, bool);
-        bool (* m_pOnProcessEvent)(uint32, Object*, Object*, bool);
-
-        // NEW HOOKS
-    public:
         /* PlayerScript */
         void OnCharacterCreate(Player* player);
         void OnCharacterDelete(uint32 guidlow);
@@ -739,6 +664,52 @@ class ScriptMgr
         void OnResurrect(Player* player);
         void OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uint32 action, const char* code);
 
+
+        /* Old hooks */
+
+        CreatureAI* GetCreatureAI(Creature* pCreature) { return NULL; } // Remove
+        GameObjectAI* GetGameObjectAI(GameObject* pGameObject) { return NULL; } // Remove
+        InstanceData* CreateInstanceData(Map* pMap) { return NULL; } // Remove
+
+        bool OnGossipHello(Player* pPlayer, Creature* pCreature) { return false; } // Remove
+        bool OnGossipHello(Player* pPlayer, GameObject* pGameObject) { return false; } // Remove
+        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code) { return false; } // Remove
+        bool OnGossipSelect(Player* pPlayer, GameObject* pGameObject, uint32 sender, uint32 action, const char* code) { return false; } // Remove
+        bool OnQuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestAccept(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestComplete(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestRewarded(Player* pPlayer, Creature* pCreature, Quest const* pQuest) { return false; } // Remove
+        bool OnQuestRewarded(Player* pPlayer, GameObject* pGameObject, Quest const* pQuest) { return false; } // Remove
+        uint32 GetDialogStatus(Player* pPlayer, Creature* pCreature) { return 100/*DIALOG_STATUS_UNDEFINED*/; } // Remove
+        uint32 GetDialogStatus(Player* pPlayer, GameObject* pGameObject) { return 100/*DIALOG_STATUS_UNDEFINED*/; } // Remove
+        bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject) { return false; } // Remove
+        bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets) { return false; } // Remove
+        bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry) { return false; } // Remove
+        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid) { return false; } // Remove
+        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, GameObject* pTarget, ObjectGuid originalCasterGuid) { return false; } // Remove
+        bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Item* pTarget, ObjectGuid originalCasterGuid) { return false; } // Remove
+        bool OnEffectScriptEffect(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid) { return false; } // Remove
+        bool OnAuraDummy(Aura const* pAura, bool apply) { return false; } // Remove
+        bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart) { return false; } // Remove
+
+    private:
+        void CollectPossibleEventIds(std::set<uint32>& eventIds);
+        void LoadScripts(ScriptMapMapName& scripts, const char* tablename);
+        void CheckScriptTexts(ScriptMapMapName const& scripts, std::set<int32>& ids);
+
+        typedef std::vector<std::string> ScriptNameMap;
+        typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
+        typedef UNORDERED_MAP<uint32, uint32> EventIdScriptMap;
+
+        AreaTriggerScriptMap    m_AreaTriggerScripts;
+        EventIdScriptMap        m_EventIdScripts;
+
+        ScriptNameMap           m_scriptNames;
+
+        // atomic op counter for active scripts amount
+        ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
 };
 
 // Starters for events
