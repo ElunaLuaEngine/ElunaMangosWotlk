@@ -267,12 +267,6 @@ struct HookMgr
 
     /* Misc */
     void OnWorldUpdate(uint32 diff);
-    void OnLootItem(Player* pPlayer, Item* pItem, uint32 count, uint64 guid);
-    void OnFirstLogin(Player* pPlayer);
-    void OnEquip(Player* pPlayer, Item* pItem, uint8 bag, uint8 slot);
-    void OnRepop(Player* pPlayer);
-    void OnResurrect(Player* pPlayer);
-    InventoryResult OnCanUseItem(const Player* pPlayer, uint32 itemEntry);
     void OnEngineRestart();
     /* Item */
     bool OnDummyEffect(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Item* pTarget);
@@ -304,38 +298,6 @@ struct HookMgr
     void OnDamaged(GameObject* pGameObject, Player* pPlayer); // TODO
     void OnLootStateChanged(GameObject* pGameObject, uint32 state, Unit* pUnit); // TODO
     void OnGameObjectStateChanged(GameObject* pGameObject, uint32 state); // TODO
-    /* Player */
-    void OnPlayerEnterCombat(Player* pPlayer, Unit* pEnemy);
-    void OnPlayerLeaveCombat(Player* pPlayer);
-    void OnPVPKill(Player* pKiller, Player* pKilled);
-    void OnCreatureKill(Player* pKiller, Creature* pKilled);
-    void OnPlayerKilledByCreature(Creature* pKiller, Player* pKilled);
-    void OnLevelChanged(Player* pPlayer, uint8 oldLevel);
-    void OnFreeTalentPointsChanged(Player* pPlayer, uint32 newPoints);
-    void OnTalentsReset(Player* pPlayer, bool noCost);
-    void OnMoneyChanged(Player* pPlayer, int32& amount);
-    void OnGiveXP(Player* pPlayer, uint32& amount, Unit* pVictim);
-    void OnReputationChange(Player* pPlayer, uint32 factionID, int32& standing, bool incremental);
-    void OnDuelRequest(Player* pTarget, Player* pChallenger);
-    void OnDuelStart(Player* pStarter, Player* pChallenger);
-    void OnDuelEnd(Player* pWinner, Player* pLoser, DuelCompleteType type);
-    void OnChat(Player* pPlayer, uint32 type, uint32 lang, std::string& msg, Player* pReceiver);
-    bool OnChat(Player* pPlayer, uint32 type, uint32 lang, std::string& msg);
-    bool OnChat(Player* pPlayer, uint32 type, uint32 lang, std::string& msg, Group* pGroup);
-    bool OnChat(Player* pPlayer, uint32 type, uint32 lang, std::string& msg, Guild* pGuild);
-    bool OnChat(Player* pPlayer, uint32 type, uint32 lang, std::string& msg, Channel* pChannel);
-    void OnEmote(Player* pPlayer, uint32 emote);
-    void OnTextEmote(Player* pPlayer, uint32 textEmote, uint32 emoteNum, uint64 guid);
-    void OnSpellCast(Player* pPlayer, Spell* pSpell, bool skipCheck);
-    void OnLogin(Player* pPlayer);
-    void OnLogout(Player* pPlayer);
-    void OnCreate(Player* pPlayer);
-    void OnDelete(uint32 guid);
-    void OnSave(Player* pPlayer);
-    void OnBindToInstance(Player* pPlayer, Difficulty difficulty, uint32 mapid, bool permanent);
-    void OnUpdateZone(Player* pPlayer, uint32 newZone, uint32 newArea);
-    void OnMapChanged(Player* pPlayer); // TODO
-    void HandleGossipSelectOption(Player* pPlayer, uint32 menuId, uint32 sender, uint32 action, std::string code);
     /* AreaTrigger */
     bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* pTrigger);
     /* Weather */

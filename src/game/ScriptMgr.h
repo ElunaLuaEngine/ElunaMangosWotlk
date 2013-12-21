@@ -21,23 +21,30 @@
 
 #include "Common.h"
 #include "Policies/Singleton.h"
-#include "ObjectGuid.h"
-#include "DBCEnums.h"
 #include "ace/Atomic_Op.h"
+#include "DBCEnums.h"
 
+enum Difficulty;
+enum DuelCompleteType;
+enum InventoryResult;
 struct AreaTriggerEntry;
 struct SpellEntry;
 class Aura;
+class Channel;
 class Creature;
 class CreatureAI;
 class GameObject;
 class GameObjectAI;
+class Group;
+class Guild;
 class InstanceData;
 class Item;
 class Map;
 class Object;
+class ObjectGuid;
 class Player;
 class Quest;
+class Spell;
 class SpellCastTargets;
 class Unit;
 class WorldObject;
@@ -445,16 +452,143 @@ extern ScriptMapMapName sGossipScripts;
 extern ScriptMapMapName sCreatureDeathScripts;
 extern ScriptMapMapName sCreatureMovementScripts;
 
-enum ScriptLoadResult
+class ScriptObject
 {
-    SCRIPT_LOAD_OK,
-    SCRIPT_LOAD_ERR_NOT_FOUND,
-    SCRIPT_LOAD_ERR_WRONG_API,
-    SCRIPT_LOAD_ERR_OUTDATED,
+    friend class ScriptMgr;
+
+    public:
+        virtual bool IsDatabaseBound() const { return false; }
+        const std::string& GetName() const { return _name; }
+
+    protected:
+        ScriptObject(const char* name) : _name(name) { }
+        virtual ~ScriptObject() { }
+
+    private:
+        const std::string _name;
+};
+
+class CreatureScript : public ScriptObject
+{
+    protected:
+        CreatureScript(const char* name);
+
+    public:
+        bool IsDatabaseBound() const { return true; }
+};
+
+class GameObjectScript : public ScriptObject
+{
+    protected:
+        GameObjectScript(const char* name);
+
+    public:
+        bool IsDatabaseBound() const { return true; }
+};
+
+class GroupScript : public ScriptObject
+{
+    protected:
+        GroupScript(const char* name);
+
+    public:
+};
+
+class GuildScript : public ScriptObject
+{
+    protected:
+        GuildScript(const char* name);
+
+    public:
+};
+
+class ItemScript : public ScriptObject
+{
+    protected:
+        ItemScript(const char* name);
+
+    public:
+        bool IsDatabaseBound() const { return true; }
+};
+
+class PlayerScript : public ScriptObject
+{
+    protected:
+        PlayerScript(const char* name);
+
+    public:
+        // Player
+        virtual void OnCharacterCreate(Player* player) { }
+        virtual void OnCharacterDelete(uint32 guidlow) { }
+        virtual void OnLogin(Player* player) { }
+        virtual void OnLogout(Player* player) { }
+        virtual void OnSpellCast(Player* player, Spell* spell, bool skipCheck) { }
+        virtual void OnKillPlayer(Player* killer, Player* killed) { }
+        virtual void OnKillCreature(Player* killer, Creature* killed) { }
+        virtual void OnKilledByCreature(Creature* killer, Player* killed) { }
+        virtual void OnDuelRequest(Player* target, Player* challenger) { }
+        virtual void OnDuelStart(Player* player1, Player* player2) { }
+        virtual void OnDuelEnd(Player* winner, Player* loser, DuelCompleteType type) { }
+        virtual void OnGiveXP(Player* player, uint32& amount, Unit* victim) { }
+        virtual void OnLevelChange(Player* player, uint8 oldLevel) { }
+        virtual void OnMoneyChange(Player* player, int32& amount) { }
+        virtual void OnReputationChange(Player* player, uint32 factionId, int32& standing, bool incremental) { }
+        virtual void OnTalentsChange(Player* player, uint32 newPoints) { }
+        virtual void OnTalentsReset(Player* player, bool noCost) { }
+        virtual void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg) { }
+        virtual void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver) { }
+        virtual void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group) { }
+        virtual void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild) { }
+        virtual void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel) { }
+        virtual void OnEmote(Player* player, uint32 emote) { }
+        virtual void OnTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, ObjectGuid guid) { }
+        virtual void OnSave(Player* player) { }
+        virtual void OnBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent) { }
+        virtual void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea) { }
+        virtual void OnMapChange(Player* player) { } // TODO
+        // Custom
+        virtual void OnEquip(Player* player, Item* item, uint8 bag, uint8 slot) { }
+        virtual void OnFirstLogin(Player* player) { }
+        virtual bool OnCanUseItem(Player* player, uint32 itemEntry) { return false; } // TODO
+        virtual void OnLootItem(Player* player, Item* item, uint32 count) { }
+        virtual void OnEnterCombat(Player* player, Unit* enemy) { }
+        virtual void OnLeaveCombat(Player* player) { }
+        virtual void OnRepop(Player* player) { }
+        virtual void OnResurrect(Player* player) { }
+        // Gossip
+        virtual void OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uint32 action) { }
+        virtual void OnGossipSelectCode(Player* player, uint32 menuId, uint32 sender, uint32 action, const char* code) { }
+};
+
+class WorldScript : public ScriptObject
+{
+    protected:
+        WorldScript(const char* name);
+
+    public:
+        /*
+        //world
+        WORLD_EVENT_ON_OPEN_STATE_CHANGE        =     47,       // (event, open)
+        WORLD_EVENT_ON_CONFIG_LOAD              =     48,       // (event, reload)
+        WORLD_EVENT_ON_MOTD_CHANGE              =     49,       // (event, newMOTD)
+        WORLD_EVENT_ON_SHUTDOWN_INIT            =     50,       // (event, code, mask)
+        WORLD_EVENT_ON_SHUTDOWN_CANCEL          =     51,       // (event)
+        WORLD_EVENT_ON_UPDATE                   =     52,       // (event, diff)
+        WORLD_EVENT_ON_STARTUP                  =     53,       // (event)
+        WORLD_EVENT_ON_SHUTDOWN                 =     54,       // (event)
+
+        // Area trigger
+        TRIGGER_EVENT_ON_TRIGGER                =     63,       // (event, player, triggerId)
+
+        // Weather
+        WEATHER_EVENT_ON_CHANGE                 =     64,       // (event, weather, state, grade)
+        */
 };
 
 class ScriptMgr
 {
+    friend class ScriptObject;
+
     public:
         ScriptMgr();
         ~ScriptMgr();
@@ -482,9 +616,8 @@ class ScriptMgr
         uint32 GetScriptId(const char* name) const;
         uint32 GetScriptIdsCount() const { return m_scriptNames.size(); }
 
-        ScriptLoadResult LoadScriptLibrary(const char* libName);
+        void LoadScriptLibrary();
         void UnloadScriptLibrary();
-        bool IsScriptLibraryLoaded() const { return m_hScriptLib != NULL; }
 
         uint32 IncreaseScheduledScriptsCount() { return (uint32)++m_scheduledScripts; }
         uint32 DecreaseScheduledScriptCount() { return (uint32)--m_scheduledScripts; }
@@ -496,7 +629,6 @@ class ScriptMgr
         GameObjectAI* GetGameObjectAI(GameObject* pGameObject);
         InstanceData* CreateInstanceData(Map* pMap);
 
-        char const* GetScriptLibraryVersion() const;
         bool OnGossipHello(Player* pPlayer, Creature* pCreature);
         bool OnGossipHello(Player* pPlayer, GameObject* pGameObject);
         bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action, const char* code);
@@ -513,23 +645,17 @@ class ScriptMgr
         bool OnGameObjectUse(Player* pPlayer, GameObject* pGameObject);
         bool OnItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         bool OnAreaTrigger(Player* pPlayer, AreaTriggerEntry const* atEntry);
-        bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, GameObject* pTarget, ObjectGuid originalCasterGuid);
         bool OnEffectDummy(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Item* pTarget, ObjectGuid originalCasterGuid);
         bool OnEffectScriptEffect(Unit* pCaster, uint32 spellId, SpellEffectIndex effIndex, Creature* pTarget, ObjectGuid originalCasterGuid);
         bool OnAuraDummy(Aura const* pAura, bool apply);
+        bool OnProcessEvent(uint32 eventId, Object* pSource, Object* pTarget, bool isStart);
 
     private:
         void CollectPossibleEventIds(std::set<uint32>& eventIds);
         void LoadScripts(ScriptMapMapName& scripts, const char* tablename);
         void CheckScriptTexts(ScriptMapMapName const& scripts, std::set<int32>& ids);
-
-        template<class T>
-        void GetScriptHookPtr(T& ptr, const char* name)
-        {
-            ptr = (T)MANGOS_GET_PROC_ADDR(m_hScriptLib, name);
-        }
 
         typedef std::vector<std::string> ScriptNameMap;
         typedef UNORDERED_MAP<uint32, uint32> AreaTriggerScriptMap;
@@ -539,14 +665,9 @@ class ScriptMgr
         EventIdScriptMap        m_EventIdScripts;
 
         ScriptNameMap           m_scriptNames;
-        MANGOS_LIBRARY_HANDLE   m_hScriptLib;
 
         // atomic op counter for active scripts amount
         ACE_Atomic_Op<ACE_Thread_Mutex, long> m_scheduledScripts;
-        
-        void (* m_pOnInitScriptLibrary)();
-        void (* m_pOnFreeScriptLibrary)();
-        const char* (* m_pGetScriptLibraryVersion)();
 
         CreatureAI* (* m_pGetCreatureAI)(Creature*);
         GameObjectAI* (* m_pGetGameObjectAI)(GameObject*);
@@ -570,12 +691,54 @@ class ScriptMgr
         bool (* m_pOnGOUse)(Player*, GameObject*);
         bool (* m_pOnItemUse)(Player*, Item*, SpellCastTargets const&);
         bool (* m_pOnAreaTrigger)(Player*, AreaTriggerEntry const*);
-        bool (* m_pOnProcessEvent)(uint32, Object*, Object*, bool);
         bool (* m_pOnEffectDummyCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
         bool (* m_pOnEffectDummyGO)(Unit*, uint32, SpellEffectIndex, GameObject*, ObjectGuid);
         bool (* m_pOnEffectDummyItem)(Unit*, uint32, SpellEffectIndex, Item*, ObjectGuid);
         bool (* m_pOnEffectScriptEffectCreature)(Unit*, uint32, SpellEffectIndex, Creature*, ObjectGuid);
         bool (* m_pOnAuraDummy)(Aura const*, bool);
+        bool (* m_pOnProcessEvent)(uint32, Object*, Object*, bool);
+
+        // NEW HOOKS
+    public:
+        /* PlayerScript */
+        void OnCharacterCreate(Player* player);
+        void OnCharacterDelete(uint32 guidlow);
+        void OnLogin(Player* player);
+        void OnLogout(Player* player);
+        void OnSpellCast(Player* player, Spell* spell, bool skipCheck);
+        void OnKillPlayer(Player* killer, Player* killed);
+        void OnKillCreature(Player* killer, Creature* killed);
+        void OnKilledByCreature(Creature* killer, Player* killed);
+        void OnDuelRequest(Player* target, Player* challenger);
+        void OnDuelStart(Player* player1, Player* player2);
+        void OnDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
+        void OnGiveXP(Player* player, uint32& amount, Unit* victim);
+        void OnLevelChange(Player* player, uint8 oldLevel);
+        void OnMoneyChange(Player* player, int32& amount);
+        void OnReputationChange(Player* player, uint32 factionId, int32& standing, bool incremental);
+        void OnTalentsChange(Player* player, uint32 newPoints);
+        void OnTalentsReset(Player* player, bool noCost);
+        bool OnChat(Player* player, uint32 type, uint32 lang, std::string& msg);
+        bool OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
+        bool OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
+        bool OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
+        bool OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);
+        void OnEmote(Player* player, uint32 emote);
+        void OnTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, ObjectGuid guid);
+        void OnSave(Player* player);
+        void OnBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
+        void OnUpdateZone(Player* player, uint32 newZone, uint32 newArea);
+        void OnMapChange(Player* player);
+        void OnEquip(Player* player, Item* item, uint8 bag, uint8 slot);
+        void OnFirstLogin(Player* player);
+        bool OnCanUseItem(Player* player, uint32 itemEntry);
+        void OnLootItem(Player* player, Item* item, uint32 count);
+        void OnEnterCombat(Player* player, Unit* enemy);
+        void OnLeaveCombat(Player* player);
+        void OnRepop(Player* player);
+        void OnResurrect(Player* player);
+        void OnGossipSelect(Player* player, uint32 menuId, uint32 sender, uint32 action, const char* code);
+
 };
 
 // Starters for events

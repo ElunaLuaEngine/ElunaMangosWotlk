@@ -234,7 +234,7 @@ void ReputationMgr::Initialize()
 
 void ReputationMgr::SetReputation(FactionEntry const* factionEntry, int32 standing, bool incremental)
 {
-    sHookMgr.OnReputationChange(m_player, factionEntry->ID, standing, incremental);
+    sScriptMgr.OnReputationChange(m_player, factionEntry->ID, standing, incremental);
 
     bool anyRankIncreased = false;
 

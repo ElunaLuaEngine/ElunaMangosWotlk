@@ -1289,7 +1289,7 @@ namespace LuaPlayer
         uint32 level = player->getLevel();
 
         if (triggerHook)
-            sHookMgr.OnGiveXP(player, xp, victim);
+            sScriptMgr.OnGiveXP(player, xp, victim);
 
         // XP to money conversion processed in Player::RewardQuest
         if (level >= sWorld.getConfig(CONFIG_UINT32_MAX_PLAYER_LEVEL))

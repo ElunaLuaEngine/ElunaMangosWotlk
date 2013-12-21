@@ -464,7 +464,7 @@ void WorldSession::LogoutPlayer(bool Save)
         sSocialMgr.SendFriendStatus(_player, FRIEND_OFFLINE, _player->GetObjectGuid(), true);
         sSocialMgr.RemovePlayerSocial(_player->GetGUIDLow());
 
-        sHookMgr.OnLogout(_player);
+        sScriptMgr.OnLogout(_player);
 
         ///- Remove the player from the world
         // the player may not be in the world when logging out

@@ -46,10 +46,13 @@ template<> const char* GetTName<Corpse>() { return "Corpse"; }
 template<> const char* GetTName<Weather>() { return "Weather"; }
 
 extern void RegisterFunctions(lua_State* L);
+extern void AddElunaScripts();
 
 void StartEluna(bool restart)
 {
-    if (restart)
+    if (!restart)
+        AddElunaScripts();
+    else
     {
         sHookMgr.OnEngineRestart();
         sLog.outString("[Eluna]: Restarting Lua Engine");

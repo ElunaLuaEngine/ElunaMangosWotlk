@@ -9470,7 +9470,7 @@ void Spell::EffectDuel(SpellEffectIndex eff_idx)
     caster->SetGuidValue(PLAYER_DUEL_ARBITER, pGameObj->GetObjectGuid());
     target->SetGuidValue(PLAYER_DUEL_ARBITER, pGameObj->GetObjectGuid());
 
-    sHookMgr.OnDuelRequest(target, caster);
+    sScriptMgr.OnDuelRequest(target, caster);
 }
 
 void Spell::EffectStuck(SpellEffectIndex /*eff_idx*/)
