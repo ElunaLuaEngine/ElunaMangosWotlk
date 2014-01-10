@@ -280,7 +280,7 @@ namespace LuaGlobalFunctions
     // GetGameTime() - Gets ingame time as seconds (server time?)
     int GetGameTime(lua_State* L)
     {
-        sEluna.Push(L, sWorld.GetGameTime());
+        sEluna.Push(L, static_cast<int>(sWorld.GetGameTime()));
         return 1;
     }
 
