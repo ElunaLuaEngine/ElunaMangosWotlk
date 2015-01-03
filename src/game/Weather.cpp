@@ -27,6 +27,7 @@
 #include "WorldPacket.h"
 #include "Log.h"
 #include "Util.h"
+#include "ProgressBar.h"
 #include "LuaEngine.h"
 
 /// Create the Weather object
