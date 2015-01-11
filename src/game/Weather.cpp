@@ -219,6 +219,8 @@ bool Weather::SendWeatherForPlayersInZone(Map const* _map)
 
     ///- Log the event
     LogWeatherState(state);
+
+    sEluna->OnChange(this, m_zone, state, m_grade);
     return true;
 }
 
@@ -328,7 +330,6 @@ void Weather::LogWeatherState(WeatherState state) const
     }
 
     DETAIL_FILTER_LOG(LOG_FILTER_WEATHER, "Change the weather of zone %u (type %u, grade %f) to state %s.", m_zone, m_type, m_grade, wthstr);
-    sEluna->OnChange(this, state, m_grade);
 }
 
 // ---------------------------------------------------------
