@@ -369,8 +369,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recv_data)
 
         GetPlayer()->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION, 1);
 
-        // used by eluna
-        sEluna->OnAdd(auctionHouse);
+        sEluna->OnAdd(auctionHouseEntry, pl, it, bid, buyout, etime);
     }
 }
 
@@ -524,8 +523,7 @@ void WorldSession::HandleAuctionRemoveItem(WorldPacket& recv_data)
     pl->SaveInventoryAndGoldToDB();
     CharacterDatabase.CommitTransaction();
     sAuctionMgr.RemoveAItem(auction->itemGuidLow);
-    // used by eluna
-    sEluna->OnRemove(auctionHouse);
+    sEluna->OnRemove(auctionHouseEntry, pl, pItem);
     auctionHouse->RemoveAuction(auction->Id);
     delete auction;
 }
