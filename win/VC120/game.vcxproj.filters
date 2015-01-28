@@ -1102,18 +1102,6 @@
     <ClInclude Include="..\..\src\game\BattleGround\BattleGroundSA.h">
       <Filter>BattleGround</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\HookHelpers.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\Hooks.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\LuaEngine.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\WorldPacketMethods.h">
-      <Filter>LuaEngine\Methods</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\AuraMethods.h">
       <Filter>LuaEngine\Methods</Filter>
     </ClInclude>
@@ -1125,6 +1113,27 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\CreatureMethods.h">
       <Filter>LuaEngine\Methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaBinding.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaCreatureAI.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaEventMgr.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaIncludes.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaQueryMethods.h">
+      <Filter>LuaEngine\Methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaTemplate.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\ElunaUtility.h">
+      <Filter>LuaEngine</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\GameObjectMethods.h">
       <Filter>LuaEngine\Methods</Filter>
@@ -1138,8 +1147,17 @@
     <ClInclude Include="..\..\src\game\LuaEngine\GuildMethods.h">
       <Filter>LuaEngine\Methods</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\HookHelpers.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\Hooks.h">
+      <Filter>LuaEngine</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\ItemMethods.h">
       <Filter>LuaEngine\Methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\LuaEngine.h">
+      <Filter>LuaEngine</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\MapMethods.h">
       <Filter>LuaEngine\Methods</Filter>
@@ -1165,32 +1183,8 @@
     <ClInclude Include="..\..\src\game\LuaEngine\WorldObjectMethods.h">
       <Filter>LuaEngine\Methods</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\HookMgr.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\LuaEngine.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaBinding.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaEventMgr.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaIncludes.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaTemplate.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaUtility.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaQueryMethods.h">
+    <ClInclude Include="..\..\src\game\LuaEngine\WorldPacketMethods.h">
       <Filter>LuaEngine\Methods</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaCreatureAI.h">
-      <Filter>LuaEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
