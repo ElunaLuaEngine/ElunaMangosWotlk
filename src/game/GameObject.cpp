@@ -80,8 +80,7 @@ GameObject::~GameObject()
 
 void GameObject::AddToWorld()
 {
-    if (!IsInWorld())
-        sEluna->OnAddToWorld(this);
+    bool inWorld = IsInWorld();
 
     ///- Register the gameobject for guid lookup
     if (!IsInWorld())
@@ -94,6 +93,9 @@ void GameObject::AddToWorld()
 
     // After Object::AddToWorld so that for initial state the GO is added to the world (and hence handled correctly)
     UpdateCollisionState();
+
+    if (!inWorld)
+        sEluna->OnAddToWorld(this);
 }
 
 void GameObject::RemoveFromWorld()

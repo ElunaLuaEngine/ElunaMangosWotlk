@@ -171,8 +171,7 @@ Creature::~Creature()
 
 void Creature::AddToWorld()
 {
-    if (!IsInWorld())
-        sEluna->OnAddToWorld(this);
+    bool inWorld = IsInWorld();
 
     ///- Register the creature for guid lookup
     if (!IsInWorld() && GetObjectGuid().IsCreatureOrVehicle())
@@ -184,6 +183,9 @@ void Creature::AddToWorld()
     std::set<uint32> const* mapList = sWorld.getConfigForceLoadMapIds();
     if ((mapList && mapList->find(GetMapId()) != mapList->end()) || (GetCreatureInfo()->ExtraFlags & CREATURE_FLAG_EXTRA_ACTIVE))
         SetActiveObjectState(true);
+
+    if (!inWorld)
+        sEluna->OnAddToWorld(this);
 }
 
 void Creature::RemoveFromWorld()
