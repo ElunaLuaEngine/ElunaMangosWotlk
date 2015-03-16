@@ -34,6 +34,8 @@
 #include "Mail.h"
 #include "LuaEngine.h"
 
+#include "revision_nr.h"
+
 ScriptMapMapName sQuestEndScripts;
 ScriptMapMapName sQuestStartScripts;
 ScriptMapMapName sSpellScripts;
