@@ -1584,7 +1584,7 @@ void ObjectMgr::LoadGameObjects()
         {
             switch (gInfo->type)
             {
-                    // can be invisible always and then not req. display id in like case
+                // can be invisible always and then not req. display id in like case
                 case GAMEOBJECT_TYPE_TRAP:
                 case GAMEOBJECT_TYPE_SPELL_FOCUS:
                     break;
@@ -7224,7 +7224,7 @@ static LanguageType GetRealmLanguageType(bool create)
     }
 }
 
-bool isValidString(const std::wstring &wstr, uint32 strictMask, bool numericOrSpace, bool create = false)
+bool isValidString(const std::wstring& wstr, uint32 strictMask, bool numericOrSpace, bool create = false)
 {
     if (strictMask == 0)                                    // any language, ignore realm
     {
@@ -7679,7 +7679,7 @@ bool ObjectMgr::IsPlayerMeetToCondition(uint16 conditionId, Player const* pPlaye
     return false;
 }
 
-bool ObjectMgr::CheckDeclinedNames(const std::wstring &mainpart, DeclinedName const& names)
+bool ObjectMgr::CheckDeclinedNames(const std::wstring& mainpart, DeclinedName const& names)
 {
     for (int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
     {
