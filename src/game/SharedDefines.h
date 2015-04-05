@@ -158,7 +158,6 @@ enum Powers
     POWER_HAPPINESS                     = 4,            // UNIT_FIELD_POWER5
     POWER_RUNE                          = 5,            // UNIT_FIELD_POWER6
     POWER_RUNIC_POWER                   = 6,            // UNIT_FIELD_POWER7
-    POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };
 

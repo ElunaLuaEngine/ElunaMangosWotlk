@@ -224,6 +224,7 @@ bool Weather::SendWeatherForPlayersInZone(Map const* _map)
     LogWeatherState(state);
 
     sEluna->OnChange(this, m_zone, state, m_grade);
+
     return true;
 }
 
