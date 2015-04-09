@@ -871,7 +871,6 @@ void World::LoadConfigSettings(bool reload)
     sLog.outString("WORLD: MMap pathfinding %sabled", getConfig(CONFIG_BOOL_MMAP_ENABLED) ? "en" : "dis");
 
     setConfig(CONFIG_BOOL_ELUNA_ENABLED, "Eluna.Enabled", true);
-
     if (reload)
         sEluna->OnConfigLoad(reload);
 

@@ -499,7 +499,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
             if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
                 if (Channel* chn = cMgr->GetChannel(channel, _player))
                 {
-                    // used by eluna
                     if (!sEluna->OnChat(GetPlayer(), type, lang, msg, chn))
                         return;
 
