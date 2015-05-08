@@ -601,6 +601,12 @@
     <ClCompile Include="..\..\src\game\LuaEngine\VehicleHooks.cpp">
       <Filter>LuaEngine</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\game\LuaEngine\GossipHooks.cpp">
+      <Filter>LuaEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\game\LuaEngine\PacketHooks.cpp">
+      <Filter>LuaEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\game\AccountMgr.h">
@@ -1114,9 +1120,6 @@
     <ClInclude Include="..\..\src\game\LuaEngine\CreatureMethods.h">
       <Filter>LuaEngine\Methods</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\game\LuaEngine\ElunaBinding.h">
-      <Filter>LuaEngine</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\ElunaCreatureAI.h">
       <Filter>LuaEngine</Filter>
     </ClInclude>
@@ -1185,6 +1188,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\game\LuaEngine\WorldPacketMethods.h">
       <Filter>LuaEngine\Methods</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\game\LuaEngine\BindingMap.h">
+      <Filter>LuaEngine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
