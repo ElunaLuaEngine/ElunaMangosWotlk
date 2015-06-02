@@ -357,7 +357,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS] =
     &Aura::HandleNULL,                                      //297 1 spell (counter spell school?)
     &Aura::HandleUnused,                                    //298 unused (3.2.2a)
     &Aura::HandleUnused,                                    //299 unused (3.2.2a)
-    &Aura::HandleNULL,                                      //300 3 spells (share damage?)
+    &Aura::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT 9 spells
     &Aura::HandleNULL,                                      //301 SPELL_AURA_HEAL_ABSORB 5 spells
     &Aura::HandleUnused,                                    //302 unused (3.2.2a)
     &Aura::HandleNULL,                                      //303 17 spells
@@ -1124,8 +1124,12 @@ void Aura::TriggerSpell()
 //                    case 18347: break;
 //                    // Ranshalla Waiting
 //                    case 18953: break;
-//                    // Inferno
-//                    case 19695: break;
+                    case 19695:                             // Inferno
+                    {
+                        int32 damageForTick[8] = { 500, 500, 1000, 1000, 2000, 2000, 3000, 5000 };
+                        triggerTarget->CastCustomSpell(triggerTarget, 19698, &damageForTick[GetAuraTicks() - 1], NULL, NULL, true, NULL);
+                        return;
+                    }
 //                    // Frostwolf Muzzle DND
 //                    case 21794: break;
 //                    // Alterac Ram Collar DND
@@ -2345,6 +2349,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     case 64132:                             // Constrictor Tentacle
                         if (target->GetTypeId() == TYPEID_PLAYER)
                             target->CastSpell(target, 64133, true, NULL, this);
+                        return;
+                    case 65684:                             // Dark Essence
+                        target->RemoveAurasDueToSpell(65686);
+                        return;
+                    case 65686:                             // Light Essence
+                        target->RemoveAurasDueToSpell(65684);
                         return;
                     case 68912:                             // Wailing Souls
                         if (Unit* caster = GetCaster())
@@ -7945,6 +7955,7 @@ void Aura::PeriodicDummyTick()
                     {
                         target->CastSpell(target, 30529, true);
                         target->RemoveAurasDueToSpell(30019);
+                        target->RemoveAurasDueToSpell(30532);
                     }
                     return;
                 }

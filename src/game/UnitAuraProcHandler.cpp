@@ -976,6 +976,14 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 damage, Aura
                 case 63320:
                     triggered_spell_id = 63321;
                     break;
+                // Retaliation
+                case 65932:
+                    triggered_spell_id = 65934;
+                    break;
+                // Earth Shield
+                case 66063:
+                    triggered_spell_id = 66064;
+                    break;
                 // Meteor Fists
                 case 66725:
                 case 68161:
@@ -1021,6 +1029,10 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit* pVictim, uint32 damage, Aura
                     }
                     break;
                 }
+                // Blood Link
+                case 72178:
+                    triggered_spell_id = 72195;
+                    break;
             }
             break;
         }

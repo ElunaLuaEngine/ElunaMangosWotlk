@@ -2920,6 +2920,46 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                     m_caster->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     return;
                 }
+                case 65869:                                 // Disengage
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 65870, true);
+                    return;
+                }
+                case 66312:                                 // Light Ball Passive
+                {
+                    if (!unitTarget || m_caster->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (unitTarget->HasAuraOfDifficulty(65686))
+                            unitTarget->CastSpell(unitTarget, 67590, true);
+                        else
+                            m_caster->CastSpell(m_caster, 65795, true);
+
+                        ((Creature*)m_caster)->ForcedDespawn();
+                    }
+                    return;
+                }
+                case 66314:                                 // Dark Ball Passive
+                {
+                    if (!unitTarget || m_caster->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (unitTarget->HasAuraOfDifficulty(65684))
+                            unitTarget->CastSpell(unitTarget, 67590, true);
+                        else
+                            m_caster->CastSpell(m_caster, 65808, true);
+
+                        ((Creature*)m_caster)->ForcedDespawn();
+                    }
+                    return;
+                }
                 case 66390:                                 // Read Last Rites
                 {
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
@@ -3016,6 +3056,22 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         return;
 
                     m_caster->CastSpell(unitTarget, 71264, true);
+                    return;
+                }
+                case 72202:                                 // Blood Link
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 72195, true);
+                    return;
+                }
+                case 72254:                                 // Mark of the Fallen Champion
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER || unitTarget->HasAura(m_spellInfo->CalculateSimpleValue(eff_idx)))
+                        return;
+
+                    m_caster->CastSpell(unitTarget, m_spellInfo->CalculateSimpleValue(eff_idx), true);
                     return;
                 }
                 case 72261:                                 // Delirious Slash
@@ -5249,7 +5305,7 @@ void Spell::EffectSummonType(SpellEffectIndex eff_idx)
     uint32 amount = damage > 0 ? damage : 1;
 
     // basepoints of SUMMON_PROP_GROUP_VEHICLE is often a spellId, set amount to 1
-    if (summon_prop->Group == SUMMON_PROP_GROUP_VEHICLE)
+    if (summon_prop->Group == SUMMON_PROP_GROUP_VEHICLE || summon_prop->Group == SUMMON_PROP_GROUP_UNCONTROLLABLE_VEHICLE)
         amount = 1;
 
     // Expected Level                                       (Totem, Pet and Critter may not use this)
@@ -5398,6 +5454,7 @@ void Spell::EffectSummonType(SpellEffectIndex eff_idx)
             break;
         }
         case SUMMON_PROP_GROUP_VEHICLE:
+        case SUMMON_PROP_GROUP_UNCONTROLLABLE_VEHICLE:
         {
             summonResult = DoSummonVehicle(summonPositions, summon_prop, eff_idx, level);
             break;
@@ -7594,6 +7651,15 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     m_caster->CastSpell(unitTarget, 33684, true);
                     return;
                 }
+                case 34653:                                 // Fireball
+                case 36920:                                 // Fireball (h)
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, unitTarget->GetMap()->IsRegularDifficulty() ? 23971 : 30928, true, NULL, NULL, m_caster->GetObjectGuid());
+                    return;
+                }
                 case 35865:                                 // Summon Nether Vapor
                 {
                     if (!unitTarget)
@@ -9263,6 +9329,35 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
 
                     return;
                 }
+                case 67547:                                 // Clear Val'kyr Essence
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->RemoveAurasDueToSpell(67590);
+                    unitTarget->RemoveAurasDueToSpell(65684);
+                    unitTarget->RemoveAurasDueToSpell(m_spellInfo->CalculateSimpleValue(eff_idx));
+                    return;
+                }
+                case 67590:                                 // Powering Up
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (SpellAuraHolder* playerAura = unitTarget->GetSpellAuraHolder(m_spellInfo->Id))
+                    {
+                        if (playerAura && playerAura->GetStackAmount() == 100)
+                        {
+                            if (unitTarget->HasAuraOfDifficulty(65684))
+                                unitTarget->CastSpell(unitTarget, 65724, true);
+                            else if (unitTarget->HasAuraOfDifficulty(65686))
+                                unitTarget->CastSpell(unitTarget, 65748, true);
+
+                            unitTarget->RemoveAurasDueToSpell(m_spellInfo->Id);
+                        }
+                    }
+                    return;
+                }
                 case 67751:                                 // Ghoul Explode
                 {
                     if (!unitTarget)
@@ -9270,6 +9365,15 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
 
                     unitTarget->InterruptNonMeleeSpells(false);
                     unitTarget->CastSpell(unitTarget, 67729, false);
+                    return;
+                }
+                case 68084:                                 // Clear Val'kyr Touch of Light/Dark
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->RemoveAurasDueToSpell(66001);
+                    unitTarget->RemoveAurasDueToSpell(m_spellInfo->CalculateSimpleValue(eff_idx));
                     return;
                 }
                 case 68861:                                 // Consume Soul (ICC FoS: Bronjahm)
@@ -9300,6 +9404,14 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
 
                     // Actually this spell should be sent with SMSG_SPELL_START
                     unitTarget->CastSpell(m_caster, 69023, true);
+                    return;
+                }
+                case 69057:                                 // Bone Spike Graveyard
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER || unitTarget->HasAura(m_spellInfo->CalculateSimpleValue(EFFECT_INDEX_1)))
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 69062, true);
                     return;
                 }
                 case 69140:                                 // Coldflame (random target selection)
@@ -9357,6 +9469,38 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     m_caster->CastSpell(unitTarget, 72036, true);
                     return;
                 }
+                case 72195:                                 // Blood Link
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    uint32 auraStacks = 0;
+                    if (SpellAuraHolder* playerAura = unitTarget->GetSpellAuraHolder(72371))
+                        auraStacks = playerAura->GetStackAmount();
+
+                    int32 missingStacks = unitTarget->GetPower(unitTarget->GetPowerType()) - auraStacks;
+                    if (missingStacks <= 0)
+                        return;
+
+                    unitTarget->CastCustomSpell(unitTarget, 72371, &missingStacks, &missingStacks, NULL, true);
+                    return;
+                }
+                case 72257:                                 // Remove Marks of the Fallen Champion
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    unitTarget->RemoveAurasDueToSpell(m_spellInfo->CalculateSimpleValue(eff_idx));
+                    return;
+                }
+                case 72409:                                 // Rune of Blood
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(m_caster, m_spellInfo->CalculateSimpleValue(eff_idx), true);
+                    return;
+                }
                 case 72705:                                 // Coldflame (summon around the caster)
                 {
                     if (!unitTarget)
@@ -9366,6 +9510,22 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     for (uint32 triggeredSpell = m_spellInfo->CalculateSimpleValue(eff_idx); triggeredSpell < m_spellInfo->Id; ++triggeredSpell)
                         unitTarget->CastSpell(unitTarget, triggeredSpell, true);
 
+                    return;
+                }
+                case 73142:                                 // Bone Spike Graveyard (during storm)
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER || unitTarget->HasAura(69065))
+                        return;
+
+                    uint32 spellId = 0;
+                    switch (urand(0, 2))
+                    {
+                        case 0: spellId = 69062; break;
+                        case 1: spellId = 72669; break;
+                        case 2: spellId = 72670; break;
+                    }
+
+                    unitTarget->CastSpell(unitTarget, spellId, true);
                     return;
                 }
                 case 74455:                                 // Conflagration
