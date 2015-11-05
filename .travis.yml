@@ -26,9 +26,9 @@ git:
 sudo: false
 
 # only run travis on the master branch
-# branches:
-#   only:
-#     - master
+#branches:
+#  only:
+#    - master
 
 compiler:
   - gcc
@@ -51,14 +51,6 @@ addons:
 # overwrite GCC version for GCC build only
 before_install:
   - if [ $CC = "gcc" ] ; then export CC=gcc-4.8 CXX=g++-4.8 ; fi
-
-before_install:
-  # update compiling tools for c++11 support
-  - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -qq update
-  - sudo apt-get -qq install gcc-4.8 g++-4.8
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
 
 script:
   - test -d _build || mkdir _build
