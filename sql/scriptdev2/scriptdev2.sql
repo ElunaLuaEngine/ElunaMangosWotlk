@@ -176,6 +176,7 @@ UPDATE creature_template SET ScriptName='npc_prof_leather' WHERE entry IN (7866,
 -- UPDATE creature_template SET ScriptName='npc_innkeeper' WHERE npcflag=npcflag|65536;
 UPDATE creature_template SET ScriptName='npc_spring_rabbit' WHERE entry=32791;
 UPDATE creature_template SET ScriptName='npc_redemption_target' WHERE entry IN (6172,6177,17542,17768);
+UPDATE creature_template SET ScriptName='npc_burster_worm' WHERE entry IN (16844,16857,16968,21380,21849,22038,22466,22482,23285);
 
 /* SPELL */
 UPDATE creature_template SET ScriptName='spell_dummy_npc' WHERE entry IN (
@@ -281,7 +282,6 @@ UPDATE creature_template SET ScriptName='npc_loramus_thalipedes' WHERE entry=778
 
 /* AZUREMYST ISLE */
 UPDATE creature_template SET ScriptName='npc_draenei_survivor' WHERE entry=16483;
-UPDATE creature_template SET ScriptName='npc_engineer_spark_overgrind' WHERE entry=17243;
 UPDATE creature_template SET ScriptName='npc_injured_draenei' WHERE entry=16971;
 UPDATE creature_template SET ScriptName='npc_magwin' WHERE entry=17312;
 
@@ -1092,6 +1092,7 @@ UPDATE creature_template SET ScriptName='boss_head_of_horseman' WHERE entry=2377
 UPDATE instance_template SET ScriptName='instance_scholomance' WHERE map=289;
 UPDATE creature_template SET ScriptName='boss_darkmaster_gandling' WHERE entry=1853;
 UPDATE creature_template SET ScriptName='boss_jandice_barov' WHERE entry=10503;
+UPDATE creature_template SET ScriptName='npc_spectral_tutor' WHERE entry=10498;
 DELETE FROM scripted_event_id WHERE id IN (5618, 5619, 5620, 5621, 5622, 5623);
 INSERT INTO scripted_event_id VALUES
 (5618,'event_spell_gandling_shadow_portal'),
@@ -1743,9 +1744,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1000182,'Ughhh... I hurt. Can you help me?',0,0,7,0,'draenei_survivor SAY_HELP3'),
 (-1000183,'I don\'t know if I can make it, please help me...',0,0,7,0,'draenei_survivor SAY_HELP4'),
 
-(-1000184,'Yes Master, all goes along as planned.',0,0,7,0,'engineer_spark SAY_TEXT'),
-(-1000185,'%s puts the shell to his ear.',0,2,7,0,'engineer_spark EMOTE_SHELL'),
-(-1000186,'Now I cut you!',0,1,7,0,'engineer_spark SAY_ATTACK'),
+-- REUSE -1000184 to -1000186
 
 (-1000187,'Thank you, dear $C, you just saved my life.',0,0,0,0,'npc_redemption_target SAY_HEAL'),
 

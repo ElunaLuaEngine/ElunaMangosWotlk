@@ -1936,9 +1936,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                     }
                 }
             }
-
-            // exclude caster
-            targetUnitMap.remove(m_caster);
             break;
         }
         case TARGET_AREAEFFECT_CUSTOM:
@@ -2180,10 +2177,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
         case TARGET_ALL_FRIENDLY_UNITS_AROUND_CASTER:
             switch (m_spellInfo->Id)
             {
-                case 56153:                                 // Guardian Aura - Ahn'Kahet
-                    FillAreaTargets(targetUnitMap, radius, PUSH_SELF_CENTER, SPELL_TARGETS_FRIENDLY);
-                    targetUnitMap.remove(m_caster);
-                    break;
                 case 64844:                                 // Divine Hymn
                     // target amount stored in parent spell dummy effect but hard to access
                     FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, true);
@@ -2888,6 +2881,10 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
             // sLog.outError( "SPELL: Unknown implicit target (%u) for spell ID %u", targetMode, m_spellInfo->Id );
             break;
     }
+
+    // remove caster from the list if required by attribute
+    if (targetMode != TARGET_SELF && targetMode != TARGET_SELF2 && m_spellInfo->HasAttribute(SPELL_ATTR_EX_CANT_TARGET_SELF))
+        targetUnitMap.remove(m_caster);
 
     if (unMaxTargets && targetUnitMap.size() > unMaxTargets)
     {
@@ -3616,7 +3613,11 @@ void Spell::update(uint32 difftime)
 
                     // check for incapacitating player states
                     if (m_caster->hasUnitState(UNIT_STAT_CAN_NOT_REACT))
-                        cancel();
+                    {
+                        // certain channel spells are not interrupted
+                        if (!m_spellInfo->HasAttribute(SPELL_ATTR_EX_CHANNELED_1) && !m_spellInfo->HasAttribute(SPELL_ATTR_EX3_UNK28))
+                            cancel();
+                    }
 
                     // check if player has turned if flag is set
                     if (m_spellInfo->ChannelInterruptFlags & CHANNEL_FLAG_TURNING && m_castOrientation != m_caster->GetOrientation())
