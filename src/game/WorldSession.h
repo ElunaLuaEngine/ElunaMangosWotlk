@@ -33,6 +33,7 @@ struct ItemPrototype;
 struct AuctionEntry;
 struct AuctionHouseEntry;
 struct DeclinedName;
+struct TradeStatusInfo;
 
 class ObjectGuid;
 class Creature;
@@ -309,14 +310,14 @@ class MANGOS_DLL_SPEC WorldSession
         void SendTabardVendorActivate(ObjectGuid guid);
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
-        void SendGMTicketGetTicket(uint32 status, GMTicket* ticket = NULL);
+        void SendGMTicketGetTicket(uint32 status, GMTicket* ticket = nullptr);
         void SendGMResponse(GMTicket* ticket);
 
         void SendAttackStop(Unit const* enemy);
 
         void SendBattlegGroundList(ObjectGuid guid, BattleGroundTypeId bgTypeId);
 
-        void SendTradeStatus(TradeStatus status);
+        void SendTradeStatus(const TradeStatusInfo& status);
         void SendUpdateTrade(bool trader_state = true);
         void SendCancelTrade();
 
@@ -386,8 +387,6 @@ class MANGOS_DLL_SPEC WorldSession
         void SendSaveGuildEmblem(uint32 msg);
 
         void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data);
-
-        void DoLootRelease(ObjectGuid lguid);
 
         // Account mute time
         time_t m_muteTime;
@@ -911,7 +910,7 @@ class MANGOS_DLL_SPEC WorldSession
         uint32 m_Tutorials[8];
         TutorialDataState m_tutorialState;
         AddonsList m_addonsList;
-        ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
+        ACE_Based::LockedQueue<WorldPacket*> _recvQueue;
 };
 #endif
 /// @}

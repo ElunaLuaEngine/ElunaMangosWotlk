@@ -25,7 +25,8 @@
 #include "SharedDefines.h"
 #include "DBCEnums.h"
 #include "BattleGround.h"
-#include "ace/Recursive_Thread_Mutex.h"
+
+#include <mutex>
 
 typedef std::map<uint32, BattleGround*> BattleGroundSet;
 
@@ -94,7 +95,7 @@ class BattleGroundQueue
 
     private:
         // mutex that should not allow changing private data, nor allowing to update Queue during private data change.
-        ACE_Recursive_Thread_Mutex  m_Lock;
+        std::recursive_mutex m_Lock;
 
         typedef std::map<ObjectGuid, PlayerQueueInfo> QueuedPlayersMap;
         QueuedPlayersMap m_QueuedPlayers;
@@ -208,7 +209,7 @@ class BattleGroundMgr
         BattleGround* GetBattleGroundTemplate(BattleGroundTypeId bgTypeId);
         BattleGround* CreateNewBattleGround(BattleGroundTypeId bgTypeId, PvPDifficultyEntry const* bracketEntry, ArenaType arenaType, bool isRated);
 
-        uint32 CreateBattleGround(BattleGroundTypeId bgTypeId, bool IsArena, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam, uint32 LevelMin, uint32 LevelMax, char const* BattleGroundName, uint32 MapID, float Team1StartLocX, float Team1StartLocY, float Team1StartLocZ, float Team1StartLocO, float Team2StartLocX, float Team2StartLocY, float Team2StartLocZ, float Team2StartLocO);
+        uint32 CreateBattleGround(BattleGroundTypeId bgTypeId, bool IsArena, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam, uint32 LevelMin, uint32 LevelMax, char const* BattleGroundName, uint32 MapID, float Team1StartLocX, float Team1StartLocY, float Team1StartLocZ, float Team1StartLocO, float Team2StartLocX, float Team2StartLocY, float Team2StartLocZ, float Team2StartLocO, float StartMaxDist);
 
         void AddBattleGround(uint32 InstanceID, BattleGroundTypeId bgTypeId, BattleGround* BG) { m_BattleGrounds[bgTypeId][InstanceID] = BG; };
         void RemoveBattleGround(uint32 instanceID, BattleGroundTypeId bgTypeId) { m_BattleGrounds[bgTypeId].erase(instanceID); }
@@ -277,7 +278,7 @@ class BattleGroundMgr
         static BattleGroundTypeId WeekendHolidayIdToBGType(HolidayIds holiday);
         static bool IsBGWeekend(BattleGroundTypeId bgTypeId);
     private:
-        ACE_Thread_Mutex    SchedulerLock;
+        std::mutex    SchedulerLock;
         BattleMastersMap    mBattleMastersMap;
         CreatureBattleEventIndexesMap m_CreatureBattleEventIndexMap;
         GameObjectBattleEventIndexesMap m_GameObjectBattleEventIndexMap;

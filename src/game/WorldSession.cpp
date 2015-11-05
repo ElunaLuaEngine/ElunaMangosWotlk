@@ -39,6 +39,7 @@
 #include "Auth/AuthCrypt.h"
 #include "Auth/HMACSHA1.h"
 #include "zlib/zlib.h"
+#include "LootMgr.h"
 #include "LuaEngine.h"
 
 // select opcodes appropriate for processing in Map::Update context for current session state
@@ -82,7 +83,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale) :
-    m_muteTime(mute_time), _player(NULL), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
+    m_muteTime(mute_time), _player(nullptr), m_Socket(sock), _security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
     m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_playerSave(false),
     m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
     m_latency(0), m_clientTimeDelay(0), m_tutorialState(TUTORIALDATA_UNCHANGED)
@@ -106,11 +107,11 @@ WorldSession::~WorldSession()
     {
         m_Socket->CloseSocket();
         m_Socket->RemoveReference();
-        m_Socket = NULL;
+        m_Socket = nullptr;
     }
 
     ///- empty incoming packet queue
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
 }
@@ -139,13 +140,13 @@ void WorldSession::SendPacket(WorldPacket const* packet)
     static uint64 sendPacketCount = 0;
     static uint64 sendPacketBytes = 0;
 
-    static time_t firstTime = time(NULL);
+    static time_t firstTime = time(nullptr);
     static time_t lastTime = firstTime;                     // next 60 secs start time
 
     static uint64 sendLastPacketCount = 0;
     static uint64 sendLastPacketBytes = 0;
 
-    time_t cur_time = time(NULL);
+    time_t cur_time = time(nullptr);
 
     if ((cur_time - lastTime) < 60)
     {
@@ -202,7 +203,7 @@ bool WorldSession::Update(PacketFilter& updater)
 {
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (m_Socket && !m_Socket->IsClosed() && _recvQueue.next(packet, updater))
     {
         /*#if 1
@@ -303,7 +304,7 @@ bool WorldSession::Update(PacketFilter& updater)
     if (m_Socket && m_Socket->IsClosed())
     {
         m_Socket->RemoveReference();
-        m_Socket = NULL;
+        m_Socket = nullptr;
     }
 
     // check if we are safe to proceed with logout
@@ -311,7 +312,7 @@ bool WorldSession::Update(PacketFilter& updater)
     if (updater.ProcessLogout())
     {
         ///- If necessary, log the player out
-        time_t currTime = time(NULL);
+        time_t currTime = time(nullptr);
         if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
             LogoutPlayer(true);
 
@@ -336,8 +337,8 @@ void WorldSession::LogoutPlayer(bool Save)
     {
         sLog.outChar("Account: %d (IP: %s) Logout Character:[%s] (guid: %u)", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName() , _player->GetGUIDLow());
 
-        if (ObjectGuid lootGuid = GetPlayer()->GetLootGuid())
-            DoLootRelease(lootGuid);
+        if (Loot* loot = sLootMgr.GetLoot(_player))
+            loot->Release(_player);
 
         ///- If the player just died before logging out, make him appear as a ghost
         // FIXME: logout must be delayed in case lost connection with client in time of combat
@@ -482,7 +483,7 @@ void WorldSession::LogoutPlayer(bool Save)
             Map::DeleteFromWorld(_player);
         }
 
-        SetPlayer(NULL);                                    // deleted in Remove/DeleteFromWorld call
+        SetPlayer(nullptr);                                    // deleted in Remove/DeleteFromWorld call
 
         ///- Send the 'logout complete' packet to the client
         WorldPacket data(SMSG_LOGOUT_COMPLETE, 0);
@@ -689,7 +690,7 @@ void WorldSession::SetAccountData(AccountDataType type, time_t time_, const std:
     }
     else
     {
-        // _player can be NULL and packet received after logout but m_GUID still store correct guid
+        // _player can be nullptr and packet received after logout but m_GUID still store correct guid
         if (!m_GUIDLow)
             return;
 
@@ -714,7 +715,7 @@ void WorldSession::SetAccountData(AccountDataType type, time_t time_, const std:
 void WorldSession::SendAccountDataTimes(uint32 mask)
 {
     WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + 8 * 4); // changed in WotLK
-    data << uint32(time(NULL));                             // unix time of something
+    data << uint32(time(nullptr));                             // unix time of something
     data << uint8(1);
     data << uint32(mask);                                   // type mask
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)

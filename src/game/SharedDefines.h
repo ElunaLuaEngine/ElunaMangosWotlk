@@ -2974,7 +2974,7 @@ enum TradeStatus
     TRADE_STATUS_NO_TARGET      = 6,
     TRADE_STATUS_BACK_TO_TRADE  = 7,
     TRADE_STATUS_TRADE_COMPLETE = 8,
-    // 9?
+    TRADE_STATUS_TRADE_REJECTED = 9,
     TRADE_STATUS_TARGET_TO_FAR  = 10,
     TRADE_STATUS_WRONG_FACTION  = 11,
     TRADE_STATUS_CLOSE_WINDOW   = 12,
@@ -2987,7 +2987,8 @@ enum TradeStatus
     TRADE_STATUS_YOU_LOGOUT     = 19,
     TRADE_STATUS_TARGET_LOGOUT  = 20,
     TRADE_STATUS_TRIAL_ACCOUNT  = 21,                       // Trial accounts can not perform that action
-    TRADE_STATUS_ONLY_CONJURED  = 22                        // You can only trade conjured items... (cross realm BG related).
+    TRADE_STATUS_WRONG_REALM    = 22,                       // You can only trade conjured items... (cross realm BG related).
+    TRADE_STATUS_NOT_ON_TAPLIST = 23                        // Related to trading soulbound loot items
 };
 
 enum EncounterCreditType
@@ -3084,6 +3085,44 @@ enum TeleportLocation
 {
     TELEPORT_LOCATION_HOMEBIND          = 0,
     TELEPORT_LOCATION_BG_ENTRY_POINT    = 1,
+};
+
+// For Loot system
+enum CreatureLootStatus
+{
+    CREATURE_LOOT_STATUS_NONE           = 0,
+    CREATURE_LOOT_STATUS_PICKPOCKETED   = 1,
+    CREATURE_LOOT_STATUS_LOOTED         = 2,
+    CREATURE_LOOT_STATUS_SKIN_AVAILABLE = 3,
+    CREATURE_LOOT_STATUS_SKINNED        = 4
+};
+
+enum LootMethod
+{
+    FREE_FOR_ALL        = 0,
+    ROUND_ROBIN         = 1,
+    MASTER_LOOT         = 2,
+    GROUP_LOOT          = 3,
+    NEED_BEFORE_GREED   = 4,
+
+    NOT_GROUP_TYPE_LOOT = 5                                 // internal use only
+};
+
+// internal loot type
+enum LootType
+{
+    LOOT_CORPSE         = 1,
+    LOOT_PICKPOCKETING  = 2,
+    LOOT_FISHING        = 3,
+    LOOT_DISENCHANTING  = 4,
+    LOOT_SKINNING       = 6,
+    LOOT_PROSPECTING    = 7,
+    LOOT_MILLING        = 8,
+    LOOT_FISHINGHOLE    = 20,
+    LOOT_FISHING_FAIL   = 21,
+    LOOT_INSIGNIA       = 22,
+    LOOT_MAIL           = 23,
+    LOOT_SPELL          = 24,
 };
 
 #endif
