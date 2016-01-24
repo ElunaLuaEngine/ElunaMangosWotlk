@@ -6756,6 +6756,8 @@ void Aura::HandleShapeshiftBoosts(bool apply)
         case FORM_FRENZY:
         case FORM_NONE:
             break;
+        default:
+            break;
     }
 
     if (apply)
@@ -7874,6 +7876,9 @@ void Aura::PeriodicTick()
             // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
             if (powerType == POWER_RAGE)
                 target->ModifyPower(powerType, m_modifier.m_amount * 3 / 5);
+            // Butchery
+            else if (powerType == POWER_RUNIC_POWER && target->isInCombat())
+                target->ModifyPower(powerType, m_modifier.m_amount);
             break;
         }
         // Here tick dummy auras

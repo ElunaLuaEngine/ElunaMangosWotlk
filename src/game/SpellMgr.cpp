@@ -2142,6 +2142,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if ((spellInfo_1->Id == 44852 && spellInfo_2->Id == 46021) ||
                             (spellInfo_2->Id == 44852 && spellInfo_1->Id == 46021))
                         return false;
+
+                    // Halls of Reflection Clone
+                    if (spellInfo_1->SpellIconID == 692 && spellInfo_2->SpellIconID == 692)
+                        return false;
                     break;
                 }
                 case SPELLFAMILY_MAGE:
@@ -2756,7 +2760,7 @@ SpellEntry const* SpellMgr::SelectAuraRankForLevel(SpellEntry const* spellInfo, 
     return nullptr;
 }
 
-typedef UNORDERED_MAP<uint32, uint32> AbilitySpellPrevMap;
+typedef std::unordered_map<uint32, uint32> AbilitySpellPrevMap;
 
 static void LoadSpellChains_AbilityHelper(SpellChainMap& chainMap, AbilitySpellPrevMap const& prevRanks, uint32 spell_id, uint32 prev_id, uint32 deep = 30)
 {
@@ -4678,7 +4682,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         if (questStart)
         {
             // not in expected required quest state
-            if (!player || (!questStartCanActive || !player->IsActiveQuest(questStart)) && !player->GetQuestRewardStatus(questStart))
+            if (!player || ((!questStartCanActive || !player->IsActiveQuest(questStart)) && !player->GetQuestRewardStatus(questStart)))
                 return false;
         }
 

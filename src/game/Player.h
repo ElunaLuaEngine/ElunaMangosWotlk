@@ -113,8 +113,8 @@ struct PlayerTalent
     PlayerSpellState state;
 };
 
-typedef UNORDERED_MAP<uint32, PlayerSpell> PlayerSpellMap;
-typedef UNORDERED_MAP<uint32, PlayerTalent> PlayerTalentMap;
+typedef std::unordered_map<uint32, PlayerSpell> PlayerSpellMap;
+typedef std::unordered_map<uint32, PlayerTalent> PlayerTalentMap;
 
 struct SpellCooldown
 {
@@ -570,7 +570,7 @@ struct SkillStatusData
     SkillUpdateState uState;
 };
 
-typedef UNORDERED_MAP<uint32, SkillStatusData> SkillStatusMap;
+typedef std::unordered_map<uint32, SkillStatusData> SkillStatusMap;
 
 enum PlayerSlots
 {
@@ -1150,6 +1150,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         void SetVirtualItemSlot(uint8 i, Item* item);
         void SetSheath(SheathState sheathed) override;      // overwrite Unit version
+        bool ViableEquipSlots(ItemPrototype const* proto, uint8 *viable_slots) const;
         uint8 FindEquipSlot(ItemPrototype const* proto, uint32 slot, bool swap) const;
         uint32 GetItemCount(uint32 item, bool inBankAlso = false, Item* skipItem = nullptr) const;
         uint32 GetItemCountWithLimitCategory(uint32 limitCategory, Item* skipItem = nullptr) const;
@@ -1527,7 +1528,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         uint8 unReadMails;
         time_t m_nextMailDelivereTime;
 
-        typedef UNORDERED_MAP<uint32, Item*> ItemMap;
+        typedef std::unordered_map<uint32, Item*> ItemMap;
 
         ItemMap mMitems;                                    // template defined in objectmgr.cpp
 
@@ -2249,7 +2250,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         /***                 INSTANCE SYSTEM                   ***/
         /*********************************************************/
 
-        typedef UNORDERED_MAP < uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
+        typedef std::unordered_map < uint32 /*mapId*/, InstancePlayerBind > BoundInstancesMap;
 
         void UpdateHomebindTime(uint32 time);
 
