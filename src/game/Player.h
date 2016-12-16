@@ -1772,7 +1772,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         void UpdateDefenseBonusesMod();
         float GetMeleeCritFromAgility() const;
-        void GetDodgeFromAgility(float& diminishing, float& nondiminishing);
+        float GetDodgeFromAgility(float amount);
         float GetSpellCritFromIntellect() const;
         float OCTRegenHPPerSpirit() const;
         float OCTRegenMPPerSpirit() const;
@@ -2556,9 +2556,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         DeclinedName* m_declinedname;
         Runes* m_runes;
         EquipmentSets m_EquipmentSets;
-
-        /// class dependent melee diminishing constant for dodge/parry/missed chances
-        static const float m_diminishing_k[MAX_CLASSES];
 
     private:
         void _HandleDeadlyPoison(Unit* Target, WeaponAttackType attType, SpellEntry const* spellInfo);
