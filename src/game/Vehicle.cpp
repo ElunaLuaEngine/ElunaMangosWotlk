@@ -38,14 +38,11 @@
 #include "Log.h"
 #include "Unit.h"
 #include "Creature.h"
-#include "CreatureAI.h"
+#include "AI/CreatureAI.h"
 #include "ObjectMgr.h"
 #include "SQLStorages.h"
-#include "Util.h"
 #include "movement/MoveSplineInit.h"
-#include "movement/MoveSpline.h"
 #include "MapManager.h"
-#include "TemporarySummon.h"
 #include "LuaEngine.h"
 
 void ObjectMgr::LoadVehicleAccessory()
@@ -138,7 +135,7 @@ void VehicleInfo::Initialize()
             DEBUG_LOG("VehicleInfo(of %s)::Initialize: Load vehicle accessory %s onto seat %u", m_owner->GetGuidStr().c_str(), summoned->GetGuidStr().c_str(), itr->seatId);
             m_accessoryGuids.insert(summoned->GetObjectGuid());
             int32 basepoint0 = itr->seatId + 1;
-            summoned->CastCustomSpell((Unit*)m_owner, SPELL_RIDE_VEHICLE_HARDCODED, &basepoint0, nullptr, nullptr, true);
+            summoned->CastCustomSpell((Unit*)m_owner, SPELL_RIDE_VEHICLE_HARDCODED, &basepoint0, nullptr, nullptr, TRIGGERED_OLD_TRIGGERED);
 
             sEluna->OnInstallAccessory(this, summoned);
         }
@@ -158,6 +155,9 @@ void VehicleInfo::Initialize()
         pVehicle->m_movementInfo.AddMovementFlags2(MOVEFLAG2_ALLOW_PITCHING);
     if (vehicleFlags & VEHICLE_FLAG_FULLSPEEDPITCHING)
         pVehicle->m_movementInfo.AddMovementFlags2(MOVEFLAG2_FULLSPEEDPITCHING);
+
+    if (vehicleFlags & VEHICLE_FLAG_FIXED_POSITION)
+        pVehicle->SetRoot(true);
 
     // Initialize power type based on DBC values (creatures only)
     if (pVehicle->GetTypeId() == TYPEID_UNIT)
@@ -224,7 +224,7 @@ void VehicleInfo::Board(Unit* passenger, uint8 seat)
         pPlayer->RemovePet(PET_SAVE_AS_CURRENT);
 
         WorldPacket data(SMSG_ON_CANCEL_EXPECTED_RIDE_VEHICLE_AURA);
-        pPlayer->GetSession()->SendPacket(&data);
+        pPlayer->GetSession()->SendPacket(data);
 
         // SMSG_BREAK_TARGET (?)
     }
@@ -320,6 +320,9 @@ void VehicleInfo::UnBoard(Unit* passenger, bool changeVehicle)
 
     UnBoardPassenger(passenger);                            // Use TransportBase to remove the passenger from storage list
 
+    // Remove passenger modifications
+    RemoveSeatMods(passenger, seatEntry->m_flags);
+
     if (!changeVehicle)                                     // Send expected unboarding packages
     {
         // Update movementInfo
@@ -354,11 +357,8 @@ void VehicleInfo::UnBoard(Unit* passenger, bool changeVehicle)
         }
     }
 
-    // Remove passenger modifications
-    RemoveSeatMods(passenger, seatEntry->m_flags);
 
     sEluna->OnRemovePassenger(this, passenger);
-
     // Some creature vehicles get despawned after passenger unboarding
     if (m_owner->GetTypeId() == TYPEID_UNIT)
     {
@@ -405,10 +405,10 @@ bool VehicleInfo::CanBoard(Unit* passenger) const
 
     // Check for empty player seats
     if (passenger->GetTypeId() == TYPEID_PLAYER)
-        return GetEmptySeatsMask() & m_playerSeats;
+        return !!(GetEmptySeatsMask() & m_playerSeats);
 
     // Check for empty creature seats
-    return GetEmptySeatsMask() & m_creatureSeats;
+    return !!(GetEmptySeatsMask() & m_creatureSeats);
 }
 
 Unit* VehicleInfo::GetPassenger(uint8 seat) const
@@ -628,7 +628,8 @@ void VehicleInfo::RemoveSeatMods(Unit* passenger, uint32 seatFlags)
         }
 
         // Reinitialize movement
-        ((Creature*)passenger)->AI()->SetCombatMovement(true, true);
+        if (((Creature*)passenger)->AI())
+            ((Creature*)passenger)->AI()->SetCombatMovement(true, true);
         if (!passenger->getVictim())
             passenger->GetMotionMaster()->Initialize();
     }

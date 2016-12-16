@@ -80,11 +80,6 @@ INSERT INTO scripted_areatrigger VALUES
 (1738,'at_scent_larkorwi'),
 (1739,'at_scent_larkorwi'),
 (1740,'at_scent_larkorwi');
-DELETE FROM scripted_areatrigger WHERE entry IN (5604,5709,5732);
-INSERT INTO scripted_areatrigger VALUES
-(5604,'at_icecrown_citadel'),
-(5709,'at_icecrown_citadel'),
-(5732,'at_icecrown_citadel');
 DELETE FROM scripted_areatrigger WHERE entry in (4288,4485);
 INSERT INTO scripted_areatrigger VALUES
 (4288,'at_dark_portal'),
@@ -105,6 +100,8 @@ INSERT INTO scripted_areatrigger VALUES
 (5716, 'at_hot_on_the_trail');
 DELETE FROM scripted_areatrigger WHERE entry=3587;
 INSERT INTO scripted_areatrigger VALUES (3587,'at_ancient_leaf');
+DELETE FROM scripted_areatrigger WHERE entry=4479;
+INSERT INTO scripted_areatrigger VALUES (4479,'at_haramad_teleport');
 
 
 /* BATTLEGROUNDS */
@@ -282,13 +279,11 @@ UPDATE creature_template SET ScriptName='npc_loramus_thalipedes' WHERE entry=778
 
 /* AZUREMYST ISLE */
 UPDATE creature_template SET ScriptName='npc_draenei_survivor' WHERE entry=16483;
-UPDATE creature_template SET ScriptName='npc_injured_draenei' WHERE entry=16971;
 UPDATE creature_template SET ScriptName='npc_magwin' WHERE entry=17312;
 
 /* BADLANDS */
 
 /* BARRENS */
-UPDATE creature_template SET ScriptName='npc_beaten_corpse' WHERE entry=10668;
 UPDATE creature_template SET ScriptName='npc_gilthares' WHERE entry=3465;
 UPDATE creature_template SET ScriptName='npc_taskmaster_fizzule' WHERE entry=7233;
 UPDATE creature_template SET ScriptName='npc_twiggy_flathead' WHERE entry=6248;
@@ -349,7 +344,6 @@ UPDATE creature_template SET ScriptName='boss_high_interrogator_gerstahn' WHERE 
 UPDATE creature_template SET ScriptName='boss_coren_direbrew' WHERE entry=23872;
 UPDATE creature_template SET ScriptName='npc_grimstone' WHERE entry=10096;
 UPDATE creature_template SET ScriptName='npc_theldren_trigger' WHERE entry=16079;
-UPDATE creature_template SET ScriptName='npc_kharan_mighthammer' WHERE entry=9021;
 UPDATE creature_template SET ScriptName='npc_phalanx' WHERE entry=9502;
 UPDATE creature_template SET ScriptName='npc_mistress_nagmara' WHERE entry=9500;
 UPDATE creature_template SET ScriptName='npc_rocknot' WHERE entry=9503;
@@ -393,12 +387,14 @@ UPDATE creature_template SET ScriptName='npc_daranelle' WHERE entry=21469;
 UPDATE creature_template SET ScriptName='npc_bloodmaul_stout_trigger' WHERE entry=21241;
 UPDATE creature_template SET ScriptName='npc_simon_game_bunny' WHERE entry=22923;
 UPDATE creature_template SET ScriptName='npc_light_orb_collector' WHERE entry IN (21926,22333);
+UPDATE creature_template SET ScriptName='npc_bloodmaul_dire_wolf' WHERE entry=20058;
 
 /* BLASTED LANDS */
 UPDATE creature_template SET ScriptName='npc_fallen_hero_of_horde' WHERE entry=7572;
 
 /* BLOODMYST ISLE */
 UPDATE creature_template SET ScriptName='mob_webbed_creature' WHERE entry=17680;
+UPDATE creature_template SET ScriptName='npc_demolitionist_legoso' WHERE entry=17982;
 
 /* BOREAN TUNDRA */
 UPDATE creature_template SET ScriptName='npc_nesingwary_trapper' WHERE entry=25835;
@@ -411,6 +407,7 @@ UPDATE creature_template SET ScriptName='npc_nexus_drake_hatchling' WHERE entry=
 UPDATE creature_template SET ScriptName='npc_scourged_flamespitter' WHERE entry=25582;
 UPDATE creature_template SET ScriptName='npc_bonker_togglevolt' WHERE entry=25589;
 UPDATE creature_template SET ScriptName='npc_jenny' WHERE entry=25969;
+UPDATE creature_template SET ScriptName='npc_seaforium_depth_charge' WHERE entry=25401;
 
 /* BURNING STEPPES */
 UPDATE creature_template SET ScriptName='npc_ragged_john' WHERE entry=9563;
@@ -576,9 +573,15 @@ UPDATE gameobject_template SET ScriptName='go_defias_cannon' WHERE entry=16398;
 UPDATE creature_template SET ScriptName='npc_aged_dying_ancient_kodo' WHERE entry IN (4700, 4701, 4702, 11627);
 UPDATE creature_template SET ScriptName='npc_dalinda_malem' WHERE entry=5644;
 UPDATE creature_template SET ScriptName='npc_melizza_brimbuzzle' WHERE entry=12277;
+UPDATE creature_template SET ScriptName='npc_cork_gizelton' WHERE entry=11625;
+UPDATE creature_template SET ScriptName='npc_rigger_gizelton' WHERE entry=11626;
 
 /* DIRE MAUL */
 UPDATE instance_template SET ScriptName='instance_dire_maul' WHERE map=429;
+DELETE FROM scripted_event_id WHERE id IN (8420,8428);
+INSERT INTO scripted_event_id VALUES
+(8420,'event_spells_warlock_dreadsteed'),
+(8428,'event_spells_warlock_dreadsteed');
 
 /* DRAGONBLIGHT */
 UPDATE creature_template SET ScriptName='npc_destructive_ward' WHERE entry=27430;
@@ -624,7 +627,6 @@ UPDATE creature_template SET ScriptName='npc_scarlet_ghoul' WHERE entry=28845;
 UPDATE creature_template SET ScriptName='npc_highlord_darion_mograine' WHERE entry=29173;
 UPDATE creature_template SET ScriptName='npc_fellow_death_knight' WHERE entry IN (29199, 29204, 29200);
 UPDATE creature_template SET ScriptName='npc_lich_king_light_dawn' WHERE entry=29183;
-UPDATE creature_template SET ScriptName='npc_acherus_deathcharger' WHERE entry=28782;
 UPDATE creature_template SET ScriptName='npc_scarlet_courier' WHERE entry=29076;
 
 /* ELWYNN FOREST */
@@ -737,6 +739,7 @@ UPDATE creature_template SET ScriptName='npc_fel_guard_hound' WHERE entry=21847;
 UPDATE creature_template SET ScriptName='npc_anchorite_barada' WHERE entry=22431;
 UPDATE creature_template SET ScriptName='npc_colonel_jules' WHERE entry=22432;
 UPDATE creature_template SET ScriptName='npc_magister_aledis' WHERE entry=20159;
+UPDATE creature_template SET ScriptName='npc_living_flare' WHERE entry=24916;
 
 /* HILLSBRAD FOOTHILLS */
 
@@ -783,16 +786,33 @@ UPDATE creature_template SET ScriptName='npc_rimefang_icc' WHERE entry=37533;
 UPDATE creature_template SET ScriptName='npc_spinestalker_icc' WHERE entry=37534;
 UPDATE creature_template SET ScriptName='mob_frost_bomb' WHERE entry=37186;
 UPDATE creature_template SET ScriptName='boss_festergut' WHERE entry=36626;
+UPDATE creature_template SET ScriptName='npc_puddle_stalker' WHERE entry=37013;
+UPDATE creature_template SET ScriptName='npc_orange_gas_stalker' WHERE entry=36659;
 UPDATE creature_template SET ScriptName='boss_rotface' WHERE entry=36627;
 UPDATE creature_template SET ScriptName='mob_little_ooze' WHERE entry=36897;
 UPDATE creature_template SET ScriptName='mob_big_ooze' WHERE entry=36899;
 UPDATE creature_template SET ScriptName='boss_valithria_dreamwalker' WHERE entry=36789;
 UPDATE creature_template SET ScriptName='boss_professor_putricide' WHERE entry=36678;
+UPDATE creature_template SET ScriptName='npc_putricides_trap' WHERE entry=38879;
+UPDATE creature_template SET ScriptName='npc_volatile_ooze_icc' WHERE entry=37697;
+UPDATE creature_template SET ScriptName='npc_gas_cloud_icc' WHERE entry=37562;
+UPDATE creature_template SET ScriptName='npc_growing_ooze_puddle' WHERE entry=37690;
+UPDATE creature_template SET ScriptName='npc_choking_gas_bomb' WHERE entry=38159;
 UPDATE creature_template SET ScriptName='boss_the_lich_king_icc' WHERE entry=36597;
+UPDATE gameobject_template SET ScriptName='go_icc_teleporter' WHERE entry IN (202235,202242,202243,202244,202245,202246);
 DELETE FROM scripted_event_id WHERE id IN (23426,23438);
 INSERT INTO scripted_event_id VALUES
 (23426,'event_gameobject_citadel_valve'),
 (23438,'event_gameobject_citadel_valve');
+DELETE FROM scripted_areatrigger WHERE entry IN (5604,5611,5612,5647,5709,5718,5732);
+INSERT INTO scripted_areatrigger VALUES
+(5604,'at_icecrown_citadel'),
+(5611,'at_lights_hammer'),
+(5612,'at_lights_hammer'),
+(5647,'at_putricides_trap'),
+(5709,'at_icecrown_citadel'),
+(5718,'at_frozen_throne_tele'),
+(5732,'at_icecrown_citadel');
 
 /* FORGE OF SOULS */
 UPDATE creature_template SET ScriptName='boss_bronjahm' WHERE entry=36497;
@@ -805,10 +825,17 @@ UPDATE instance_template SET ScriptName='instance_halls_of_reflection' WHERE map
 UPDATE creature_template SET ScriptName='npc_spell_aura_dummy_frostmourne_equip' WHERE entry=37226;
 UPDATE creature_template SET ScriptName='npc_phantom_mage' WHERE entry=38172;
 UPDATE creature_template SET ScriptName='npc_spell_summon_reflections' WHERE entry=36723;
-DELETE FROM scripted_areatrigger WHERE entry IN (5697,5740);
+UPDATE creature_template SET ScriptName='boss_lich_king_hor' WHERE entry=36954;
+UPDATE creature_template SET ScriptName='npc_jaina_sylvanas_hor' WHERE entry IN (36955,37554);
+DELETE FROM scripted_areatrigger WHERE entry IN (5697,5740,5605,5660);
 INSERT INTO scripted_areatrigger VALUES
 (5697,'at_frostmourne_chamber'),
-(5740,'at_frostworn_general');
+(5740,'at_frostworn_general'),
+(5605,'at_wrath_lich_king'),
+(5660,'at_queldelar_start');
+DELETE FROM scripted_event_id WHERE id=22795;
+INSERT INTO scripted_event_id VALUES
+(22795,'event_spell_summon_ice_wall');
 
 /* PIT OF SARON */
 UPDATE instance_template SET ScriptName='instance_pit_of_saron' WHERE map=658;
@@ -1193,6 +1220,7 @@ UPDATE creature_template SET ScriptName='boss_maleki_the_pallid' WHERE entry=104
 UPDATE creature_template SET ScriptName='boss_cannon_master_willey' WHERE entry=10997;
 UPDATE creature_template SET ScriptName='boss_baroness_anastari' WHERE entry=10436;
 UPDATE creature_template SET ScriptName='boss_silver_hand_bosses' WHERE entry IN (17910,17911,17912,17913,17914);
+UPDATE creature_template SET ScriptName='npc_aurius' WHERE entry=10917;
 UPDATE creature_template SET ScriptName='mobs_spectral_ghostly_citizen' WHERE entry IN (10384,10385);
 UPDATE creature_template SET ScriptName='mob_restless_soul' WHERE entry=11122;
 UPDATE gameobject_template SET ScriptName='go_gauntlet_gate' WHERE entry=175357;
@@ -1663,12 +1691,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1000109,'Silverwing is ours!',0,0,1,0,'torek SAY_WIN'),
 (-1000110,'Go report that the outpost is taken. We will remain here.',0,0,1,0,'torek SAY_END'),
 
-(-1000111,'Our house is this way, through the thicket.',0,0,7,0,'magwin SAY_START'),
+(-1000111,'Our house is this way, through the thicket.',0,0,7,1,'magwin SAY_START'),
 (-1000112,'Help me!',0,0,7,0,'magwin SAY_AGGRO'),
-(-1000113,'My poor family. Everything has been destroyed.',0,0,7,0,'magwin SAY_PROGRESS'),
-(-1000114,'Father! Father! You\'re alive!',0,0,7,0,'magwin SAY_END1'),
-(-1000115,'You can thank $N for getting me back here safely, father.',0,0,7,0,'magwin SAY_END2'),
-(-1000116,'%s hugs her father.',0,2,7,0,'magwin EMOTE_HUG'),
+(-1000113,'My poor family. Everything has been destroyed.',0,0,7,5,'magwin SAY_PROGRESS'),
+(-1000114,'Father! Father! You\'re alive!',0,0,7,22,'magwin SAY_END1'),
+(-1000115,'You can thank $N for getting me back here safely, father.',0,0,7,1,'magwin SAY_END2'),
+(-1000116,'%s hugs her father.',0,2,7,5,'magwin EMOTE_HUG'),
 
 (-1000117,'Thank you for agreeing to help. Now, let\'s get out of here $N.',0,0,1,0,'wounded elf SAY_ELF_START'),
 (-1000118,'Over there! They\'re following us!',0,0,1,0,'wounded elf SAY_ELF_SUMMON1'),
@@ -1742,16 +1770,19 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1000175,'Thank you, mortal.',0,0,11,0,' SAY_JUST_EATEN'),
 
-(-1000176,'The last thing I remember is the ship falling and us getting into the pods. I\'ll go see how I can help. Thank you!',0,0,7,0,'draenei_survivor SAY_HEAL1'),
-(-1000177,'$C, Where am I? Who are you? Oh no! What happened to the ship?',0,0,7,0,'draenei_survivor SAY_HEAL2'),
-(-1000178,'$C You saved me! I owe you a debt that I can never repay. I\'ll go see if I can help the others.',0,0,7,0,'draenei_survivor SAY_HEAL3'),
-(-1000179,'Ugh... what is this place? Is that all that\'s left of the ship over there?',0,0,7,0,'draenei_survivor SAY_HEAL4'),
-(-1000180,'Oh, the pain...',0,0,7,0,'draenei_survivor SAY_HELP1'),
-(-1000181,'Everything hurts, Please make it stop...',0,0,7,0,'draenei_survivor SAY_HELP2'),
-(-1000182,'Ughhh... I hurt. Can you help me?',0,0,7,0,'draenei_survivor SAY_HELP3'),
-(-1000183,'I don\'t know if I can make it, please help me...',0,0,7,0,'draenei_survivor SAY_HELP4'),
+(-1000176,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000177,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000178,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000179,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000180,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000181,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000182,'REUSE ME',0,0,0,0,'REUSE_ME'),
+(-1000183,'REUSE ME',0,0,0,0,'REUSE_ME'),
 
--- REUSE -1000184 to -1000186
+(-1000184,'Daughter!',0,0,7,5,'cowlen SAY_DAUGHTER'),
+
+(-1000185,'There\'s no turning back now, $n. Stay close and watch my back.',0,0,0,1,'demolitionist_legoso SAY_ESCORT_START'),
+(-1000186,'There it is! Do you see where the large red crystal is jutting out from the Vector Coil? That\'s where I need to plant the first set of explosives.',0,0,0,25,'demolitionist_legoso SAY_ESCORT_1'),
 
 (-1000187,'Thank you, dear $C, you just saved my life.',0,0,0,0,'npc_redemption_target SAY_HEAL'),
 
@@ -2784,24 +2815,24 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1001085,'You disappoint me, Taelan. I had plans for you... grand plans. Alas, it was only a matter of time before your filthy bloodline would catch up with you.',0,0,0,1,'isillien SAY_ISILLIEN_4'),
 (-1001086,'It is as they say: Like father, like son. You are as weak of will as Tirion... perhaps more so. I can only hope my assassins finally succeeded in ending his pitiful life.',0,0,0,1,'isillien SAY_ISILLIEN_5'),
 (-1001087,'The Grand Crusader has charged me with destroying you and your newfound friends, Taelan, but know this: I do this for pleasure, not of obligation or duty.',0,0,0,1,'isillien SAY_ISILLIEN_6'),
-(-1001088,'%s calls for his guardsman.',0,2,0,0,'isillien EMOTE_ISILLIEN_ATTACK'),
-(-1001089,'The end is now, Fordring.',0,0,0,1,'isillien SAY_ISILLIEN_ATTACK'),
+(-1001088,'%s calls for his guardsman.',0,2,0,22,'isillien EMOTE_ISILLIEN_ATTACK'),
+(-1001089,'The end is now, Fordring.',0,0,0,25,'isillien SAY_ISILLIEN_ATTACK'),
 (-1001090,'Enough!',0,0,0,0,'isillien SAY_KILL_TAELAN_1'),
 (-1001091,'%s laughs.',0,2,0,11,'isillien EMOTE_ISILLIEN_LAUGH'),
 (-1001092,'Did you really believe that you could defeat me? Your friends are soon to join you, Taelan.',0,0,0,0,'isillien SAY_KILL_TAELAN_2'),
-(-1001093,'% turns his attention towards you.',0,2,0,0,'isillien EMOTE_ATTACK_PLAYER'),
+(-1001093,'%s turns his attention towards you.',0,2,0,0,'isillien EMOTE_ATTACK_PLAYER'),
 (-1001094,'What have you done, Isillien? You once fought with honor, for the good of our people... and now... you have murdered my boy...',0,0,0,0,'tirion fordring SAY_TIRION_1'),
 (-1001095,'Tragic. The elder Fordring lives on... You are too late, old man. Retreat back to your cave, hermit, unless you wish to join your son in the Twisting Nether.',0,0,0,0,'isillien SAY_TIRION_2'),
-(-1001096,'May your soul burn in anguish, Isillien! Light give me strength to battle this fiend.',0,0,0,0,'tirion fordring SAY_TIRION_3'),
-(-1001097,'Face me, coward. Face the faith and strength that you once embodied.',0,0,0,0,'tirion fordring SAY_TIRION_4'),
+(-1001096,'May your soul burn in anguish, Isillien! Light give me strength to battle this fiend.',0,0,0,15,'tirion fordring SAY_TIRION_3'),
+(-1001097,'Face me, coward. Face the faith and strength that you once embodied.',0,0,0,25,'tirion fordring SAY_TIRION_4'),
 (-1001098,'Then come, hermit!',0,0,0,0,'isillien SAY_TIRION_5'),
 (-1001099,'A thousand more like him exist. Ten thousand. Should one fall, another will rise to take the seat of power.',0,0,0,0,'tirion fordring SAY_EPILOG_1'),
 (-1001100,'%s falls to one knee.',0,2,0,16,'tirion fordring EMOTE_FALL_KNEE'),
-(-1001101,'Look what they did to my boy.',0,0,0,0,'tirion fordring SAY_EPILOG_2'),
+(-1001101,'Look what they did to my boy.',0,0,0,5,'tirion fordring SAY_EPILOG_2'),
 (-1001102,'%s holds the limp body of Taelan Fordring and softly sobs.',0,2,0,0,'tirion fordring EMOTE_HOLD_TAELAN'),
 (-1001103,'Too long have I sat idle, gripped in this haze... this malaise, lamenting what could have been... what should have been.',0,0,0,0,'tirion fordring SAY_EPILOG_3'),
 (-1001104,'Your death will not have been in vain, Taelan. A new Order is born on this day... an Order which will dedicate itself to extinguising the evil that plagues this world. An evil that cannot hide behind politics and pleasantries.',0,0,0,0,'tirion fordring SAY_EPILOG_4'),
-(-1001105,'This I promise... This I vow...',0,0,0,0,'tirion fordring SAY_EPILOG_5'),
+(-1001105,'This I promise... This I vow...',0,0,0,15,'tirion fordring SAY_EPILOG_5'),
 
 (-1001106,'Don\'t forget to get my bell out of the chest here. And remember, if do happen to wander off, just ring it and I\'ll find you again.',0,0,0,1,'shay leafrunner SAY_ESCORT_START'),
 (-1001107,'Are we taking the scenic route?',0,0,0,0,'shay leafrunner SAY_WANDER_1'),
@@ -2898,7 +2929,46 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1001187,'Gah! I spent too much time in that weak little shell.',14426,1,0,0,'malganis_icecrown SAY_TRANSFORM'),
 (-1001188,'Kirel narak! I am Mal\'Ganis. I AM ETERNAL!',14427,1,0,0,'malganis_icecrown SAY_20_HP'),
 (-1001189,'ENOUGH! I waste my time here. I must gather my strength on the homeworld.',14428,1,0,0,'malganis_icecrown SAY_DEFEATED'),
-(-1001190,'You\'ll never defeat the Lich King without my forces. I\'ll have my revenge... on him AND you!',14429,1,0,0,'malganis_icecrown SAY_ESCAPE');
+(-1001190,'You\'ll never defeat the Lich King without my forces. I\'ll have my revenge... on him AND you!',14429,1,0,0,'malganis_icecrown SAY_ESCAPE'),
+
+(-1001191,'Hey, you call yourself a body guard? Get to work and protect us...',0,0,0,0,'SAY_CORK_AMBUSH1'),
+(-1001192,'Mister body guard, are you going to earn your money or what?',0,0,0,0,'SAY_CORK_AMBUSH2'),
+(-1001193,'You\'re fired! <Cough...Cork clears throat.> I mean, help!',0,0,0,0,'SAY_CORK_AMBUSH3'),
+(-1001194,'Blast those stupid centaurs! Sigh - well, it seems you kept your bargain. Up the road you shall find Smeed Scrabblescrew, he has your money.',0,0,0,1,'SAY_CORK_END'),
+(-1001195,'Eeck! Demons hungry for the kodos!',0,0,0,0,'SAY_RIGGER_AMBUSH1'),
+(-1001196,'What am I paying you for? The kodos are nearly dead!',0,0,0,0,'SAY_RIGGER_AMBUSH2'),
+(-1001197,'Wow! We did it... not sure why we thought we needed the likes of you. Nevertheless, speak with Smeed Srablescrew; he will give you your earnings!',0,0,0,0,'SAY_RIGGER_END'),
+
+(-1001198,'Cover me!',0,0,0,5,'demolitionist_legoso SAY_ESCORT_2'),
+(-1001199,'It won\'t be much longer, $n. Just keep them off me while I work.',0,0,0,133,'demolitionist_legoso SAY_ESCORT_3'),
+(-1001200,'That\'ll do it! Quickly, take cover!',0,0,0,5,'demolitionist_legoso SAY_ESCORT_4'),
+(-1001201,'3...',0,0,0,0,'demolitionist_legoso SAY_ESCORT_COUNT_3'),
+(-1001202,'2...',0,0,0,0,'demolitionist_legoso SAY_ESCORT_COUNT_2'),
+(-1001203,'1...',0,0,0,0,'demolitionist_legoso SAY_ESCORT_COUNT_1'),
+(-1001204,'Don\'t get too excited, hero, that was the easy part. The challenge lies ahead! Let\'s go.',0,0,0,1,'demolitionist_legoso SAY_ESCORT_CONTINUE'),
+(-1001205,'What in the Nether is that?!?!',0,0,0,5,'demolitionist_legoso SAY_ESCORT_5'),
+(-1001206,'Be ready for anything, $n.',0,0,0,1,'demolitionist_legoso SAY_ESCORT_6'),
+(-1001207,'Blessed Light! She\'s siphoning energy right out of the Vector Coil!',0,0,0,34,'demolitionist_legoso SAY_ESCORT_7'),
+(-1001208,'Cover me, we have to do this quickly. Once I blow the support on this side, it will disrupt the energy beams and she\'ll break out! I doubt very much that she\'ll be happy to see us.',0,0,0,1,'demolitionist_legoso SAY_ESCORT_8'),
+(-1001209,'I\'ve almost got it! Just a little more time...',0,0,0,0,'demolitionist_legoso SAY_ESCORT_9'),
+(-1001210,'Take cover and be ready for the fight of your life, $n!',0,0,0,5,'demolitionist_legoso SAY_ESCORT_10'),
+(-1001211,'Holy mother of O\'ros!',0,0,0,5,'demolitionist_legoso SAY_ESCORT_AGGRO'),
+(-1001212,'I... I can\'t believe it\'s over. You did it! You\'ve destroyed the blood elves and their leader!',0,0,0,1,'demolitionist_legoso SAY_ESCORT_COMPLETE_1'),
+(-1001213,'Get back to Blood Watch. I\'ll see you there...',0,0,0,1,'demolitionist_legoso SAY_ESCORT_COMPLETE_2'),
+
+(-1001214,'%s becomes unstable with brimming energy.',0,2,0,0,'living_flare EMOTE_UNSTABLE'),
+(-1001215,'%s releases its energy, engulfing its surroundings in flames!',0,2,0,0,'living_flare EMOTE_BURST'),
+
+(-1001216,'The last thing I remember is the ship falling and us getting into the pods. I\'ll go see how I can help. Thank you!',0,0,7,0,'draenei_survivor SAY_HEAL1'),
+(-1001217,'Where am I? Who are you? Oh no! What happened to the ship?',0,0,7,0,'draenei_survivor SAY_HEAL2'),
+(-1001218,'$C You saved me! I owe you a debt that I can never repay. I\'ll go see if I can help the others.',0,0,7,0,'draenei_survivor SAY_HEAL3'),
+(-1001219,'Ugh... what is this place? Is that all that\'s left of the ship over there?',0,0,7,0,'draenei_survivor SAY_HEAL4'),
+(-1001220,'Many thanks to you, $c. I''d best get to the crash site and see how I can help out. Until we meet again.',0,0,7,0,'draenei_survivor SAY_HEAL5'),
+(-1001221,'Huh? What happened? Oh... my head feels like it''s going to explode! I''d best get back to the crash site.',0,0,7,0,'draenei_survivor SAY_HEAL6'),
+(-1001222,'Oh, the pain...',0,0,7,0,'draenei_survivor SAY_HELP1'),
+(-1001223,'Everything hurts. Please, make it stop...',0,0,7,0,'draenei_survivor SAY_HELP2'),
+(-1001224,'Ughhh... I hurt. Can you help me?',0,0,7,0,'draenei_survivor SAY_HELP3'),
+(-1001225,'I don''t know if I can make it. Please help me...',0,0,7,0,'draenei_survivor SAY_HELP4');
 
 -- -1 033 000 SHADOWFANG KEEP
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -3333,7 +3403,19 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1329016,'Today you have unmade what took me years to create! For this you shall all die by my hand!',0,1,0,0,'dathrohan SAY_AGGRO'),
 (-1329017,'You fools think you can defeat me so easily? Face the true might of the Nathrezim!',0,1,0,0,'dathrohan SAY_TRANSFORM'),
-(-1329018,'Damn you mortals! All my plans of revenge, all my hate... all burned to ash...',0,0,0,0,'dathrohan SAY_DEATH');
+(-1329018,'Damn you mortals! All my plans of revenge, all my hate... all burned to ash...',0,0,0,0,'dathrohan SAY_DEATH'),
+(-1329019,'Don\'t worry about me!  Slay this dreadful beast and cleanse this world of his foul taint!',0,6,0,0,'ysida YSIDA_SAY_RUN_5_MIN'),
+(-1329020,'My death means nothing.... light... will... prevail!',0,6,0,0,'ysida YSIDA_SAY_RUN_FAIL'),
+
+(-1329021,'Rivendare! I come for you!',0,1,0,0,'aurius YELL_AURIUS_AGGRO'),
+(-1329022,'Argh!',0,0,0,0,'aurius SAY_AURIUS_DEATH'),
+
+(-1329023,'Move back and hold the line! We cannot fail or all will be lost!',0,1,0,0,'YELL_BASTION_BARRICADE'),
+(-1329024,'Move to the stairs and defend!',0,1,0,0,'YELL_BASTION_STAIRS'),
+(-1329025,'The Scourge have broken into the Bastion! Redouble your efforts! We must not fail!',0,1,0,0,'YELL_BASTION_ENTRANCE'),
+(-1329026,'They have broken into the Hall of Lights! We must stop the intruders!',0,1,0,0,'YELL_BASTION_HALL_LIGHTS'),
+(-1329027,'The Scourge have broken through in all wings! May the light defeat these foul creatures! We shall fight to the last!',0,1,0,0,'YELL_BASTION_INNER_1'),
+(-1329028,'This will not be the end of the Scarlet Crusade! You will not break our line!',0,1,0,0,'YELL_BASTION_INNER_2');
 
 -- -1 349 000 MARAUDON
 
@@ -3345,17 +3427,17 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1409001,'REUSE ME',0,0,0,0,'REUSE ME'),
 (-1409002,'%s refuses to die while its master is in trouble.',0,2,0,0,'core rager EMOTE_LOWHP'),
 
-(-1409003,'Reckless mortals, none may challenge the sons of the living flame!',8035,1,0,0,'majordomo SAY_AGGRO'),
-(-1409004,'The runes of warding have been destroyed! Hunt down the infedels my bretheren.',8039,6,0,0,'majordomo SAY_SPAWN'),
+(-1409003,'Reckless mortals! None may challenge the Sons of the Living flame!',8035,1,0,0,'majordomo SAY_AGGRO'),
+(-1409004,'The runes of warding have been destroyed! Hunt down the infidels, my brethren!',8039,6,0,0,'majordomo SAY_SPAWN'),
 (-1409005,'Ashes to Ashes!',8037,1,0,0,'majordomo SAY_SLAY'),
 (-1409006,'Burn mortals! Burn for this transgression!',8036,1,0,0,'majordomo SAY_SPECIAL'),
-(-1409007,'Impossible! Stay your attack mortals! I submitt! I submitt!',8038,1,0,0,'majordomo SAY_DEFEAT_1'),
+(-1409007,'Impossible! Stay your attack, mortals... I submit! I submit!',8038,1,0,0,'majordomo SAY_DEFEAT_1'),
 
-(-1409008,'Behold Ragnaros, the Firelord! He who was ancient when this world was young! Bow before him, mortals! Bow before your ending!',8040,1,0,0,'ragnaros SAY_SUMMON_MAJ'),
-(-1409009,'TOO SOON! YOU HAVE AWAKENED ME TOO SOON, EXECUTUS! WHAT IS THE MEANING OF THIS INTRUSION?',8043,1,0,0,'ragnaros SAY_ARRIVAL1_RAG'),
-(-1409010,'These mortal infidels, my lord! They have invaded your sanctum, and seek to steal your secrets!',8041,1,0,0,'ragnaros SAY_ARRIVAL2_MAJ'),
-(-1409011,'FOOL! YOU ALLOWED THESE INSECTS TO RUN RAMPANT THROUGH THE HALLOWED CORE, AND NOW YOU LEAD THEM TO MY VERY LAIR? YOU HAVE FAILED ME, EXECUTUS! JUSTICE SHALL BE MET, INDEED!',8044,1,0,0,'ragnaros SAY_ARRIVAL3_RAG'),
-(-1409012,'NOW FOR YOU, INSECTS. BOLDLY YOU SAUGHT THE POWER OF RAGNAROS NOW YOU SHALL SEE IT FIRST HAND.',8045,1,0,0,'ragnaros SAY_ARRIVAL5_RAG'),
+(-1409008,'Behold Ragnaros - the Firelord! He who was ancient when this world was young! Bow before him, mortals! Bow before your ending!',8040,1,0,0,'ragnaros SAY_SUMMON_MAJ'),
+(-1409009,'TOO SOON! YOU HAVE AWAKENED ME TOO SOON, EXECUTUS! WHAT IS THE MEANING OF THIS INTRUSION???',8043,1,0,0,'ragnaros SAY_ARRIVAL1_RAG'),
+(-1409010,'These mortal infidels, my lord! They have invaded your sanctum and seek to steal your secrets!',8041,1,0,0,'ragnaros SAY_ARRIVAL2_MAJ'),
+(-1409011,'FOOL! YOU ALLOWED THESE INSECTS TO RUN RAMPANT THROUGH THE HALLOWED CORE? AND NOW YOU LEAD THEM TO MY VERY LAIR? YOU HAVE FAILED ME, EXECUTUS! JUSTICE SHALL BE MET, INDEED!',8044,1,0,0,'ragnaros SAY_ARRIVAL3_RAG'),
+(-1409012,'NOW FOR YOU, INSECTS! BOLDLY, YOU SOUGHT THE POWER OF RAGNAROS. NOW YOU SHALL SEE IT FIRSTHAND!',8045,1,0,0,'ragnaros SAY_ARRIVAL5_RAG'),
 
 (-1409013,'COME FORTH, MY SERVANTS! DEFEND YOUR MASTER!',8049,1,0,0,'ragnaros SAY_REINFORCEMENTS1'),
 (-1409014,'YOU CANNOT DEFEAT THE LIVING FLAME! COME YOU MINIONS OF FIRE! COME FORTH YOU CREATURES OF HATE! YOUR MASTER CALLS!',8050,1,0,0,'ragnaros SAY_REINFORCEMENTS2'),
@@ -3365,10 +3447,10 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1409018,'MY PATIENCE IS DWINDILING! COME NATS TO YOUR DEATH!',8048,1,0,0,'ragnaros SAY_MAGMABURST'),
 
 (-1409019,'You think you\'ve won already? Perhaps you\'ll need another lesson in pain!',0,1,0,0,'majordomo SAY_LAST_ADD'),
-(-1409020,'Brashly you have come to rest the secrets of the living flame. You will soon regret the recklessness of your quest.',0,1,0,0,'majordomo SAY_DEFEAT_2'),
-(-1409021,'I go now to summon the lord whos house this is. Should you seek an audiance with him your paltry lives will surly be forfit. Nevertheless seek out his lair if you dare!',0,1,0,0,'majordomo SAY_DEFEAT_3'),
+(-1409020,'Brashly, you have come to wrest the secrets of the Living Flame! You will soon regret the recklessness of your quest.',0,1,0,0,'majordomo SAY_DEFEAT_2'),
+(-1409021,'I go now to summon the lord whose house this is. Should you seek an audience with him, your paltry lives will surely be forfeit! Nevertheless, seek out his lair, if you dare!',0,1,0,0,'majordomo SAY_DEFEAT_3'),
 (-1409022,'My flame! Please don\'t take away my flame... ',8042,1,0,0,'ragnaros SAY_ARRIVAL4_MAJ'),
-(-1409023,'Very well, $N.',0,0,0,0,'majordomo SAY_SUMMON_0'),
+(-1409023,'Very well, $n.',0,0,0,0,'majordomo SAY_SUMMON_0'),
 (-1409024,'Impudent whelps! You\'ve rushed headlong to your own deaths! See now, the master stirs!',0,1,0,0,'majordomo SAY_SUMMON_1');
 
 -- -1 429 000 DIRE MAUL
@@ -3729,10 +3811,10 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1533033,'You die now!',8877,1,0,0,'thaddius SAY_SLAY'),
 (-1533034,'Now YOU feel pain!',8871,1,0,0,'thaddius SAY_ELECT'),
 (-1533035,'Thank... you...',8870,1,0,0,'thaddius SAY_DEATH'),
-(-1533036,'Pleeease!',8873,1,0,0,'thaddius SAY_SCREAM1'),
-(-1533037,'Stop, make it stop!',8874,1,0,0,'thaddius SAY_SCREAM2'),
-(-1533038,'Help me! Save me!',8875,1,0,0,'thaddius SAY_SCREAM3'),
-(-1533039,'Please, nooo!',8876,1,0,0,'thaddius SAY_SCREAM4'),
+(-1533036,'REUSE_ME',0,0,0,0,'REUSE'),
+(-1533037,'REUSE_ME',0,0,0,0,'REUSE'),
+(-1533038,'REUSE_ME',0,0,0,0,'REUSE'),
+(-1533039,'REUSE_ME',0,0,0,0,'REUSE'),
 
 (-1533040,'Foolishly you have sought your own demise.',8807,1,0,0,'gothik SAY_SPEECH_1'),
 (-1533041,'Death is the only escape.',8806,1,0,0,'gothik SAY_KILL'),
@@ -5836,8 +5918,8 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1609095,'$gPoppy:Mama;!',0,0,0,434,'scarlet ghoul SAY_GHUL_SPAWN_5'),
 (-1609096,'It puts the ghoul in the pit or else it gets the lash!',0,0,0,25,'gothik the harvester SAY_GOTHIK_THROW_IN_PIT'),
 
-(-1609097,'%s rears up, beckoning you to ride it.',0,2,0,0,'Acherus Deathcharger EMOTE_HORSE_READY'),
-(-1609098,'Impressive, death knight. Return to me in the world of the living for your reward.',0,0,0,2,'Salanar the Horseman SAY_RACE_FINISHED'),
+(-1609097,'REUSE ME',0,0,0,0,'REUSE ME'),
+(-1609098,'REUSE ME',0,0,0,0,'REUSE ME'),
 
 (-1609201,'Soldiers of the Scourge, stand ready! Prepare to unleash your fury upon the Argent Dawn!',14677,1,0,0,'Highlord Darion Mograine'),
 (-1609202,'The sky weeps at the devastation of these lands! Soon, Azeroth\'s futile tears will rain down upon us!',14678,1,0,0,'Highlord Darion Mograine'),
@@ -6154,7 +6236,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1631082,'Fun time!',16901,1,0,0,'festergut SAY_AGGRO'),
 (-1631083,'Just an ordinary gas cloud. But watch out, because that\'s no ordinary gas cloud! ',17119,1,0,0,'putricide SAY_BLIGHT'),
 (-1631084,'%s farts.',16911,2,0,0,'festergut SAY_SPORE'), -- TODO Can be wrong
-(-1631085,'Gyah! Uhhh, I not feel so good...',16906,1,0,0,'festergut SAY_PUNGUENT_BLIGHT'),
+(-1631085,'I not feel so good...',16906,1,0,0,'festergut SAY_PUNGUENT_BLIGHT'),
 (-1631086,'%s vomits',0,2,0,0,'festergut SAY_PUNGUENT_BLIGHT_EMOTE'), -- TODO Can be wrong
 (-1631087,'Daddy, I did it',16902,1,0,0,'festergut SAY_SLAY_1'),
 (-1631088,'Dead, dead, dead!',16903,1,0,0,'festergut SAY_SLAY_2'),
@@ -6280,7 +6362,15 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1631197,'Invocation of Blood jumps to %s!',0,3,0,0,'blood_princes EMOTE_INVOCATION'),
 (-1631198,'%s begins casting Empowered Shock Vortex!',0,3,0,0,'valanar EMOTE_SHOCK_VORTEX'),
-(-1631199,'%s speed toward $N!',0,3,0,0,'taldaram EMOTE_FLAMES');
+(-1631199,'%s speed toward $N!',0,3,0,0,'taldaram EMOTE_FLAMES'),
+
+(-1631200,'Terrible news everyone. Rotface is dead, but great news everyone! He left behind plenty of ooze for me to use! What? I\'m a poet and I didn\'t know it.... Astounding!',17146,1,0,0,'festergut SAY_BLIGHT_2'),
+(-1631201,'%s releases Gas Spores!',0,3,0,0,'festergut EMOTE_SPORES'),
+(-1631202,'%s begins to cast Slime Spray!',0,3,0,0,'rotface EMOTE_SLIME_SPRAY'),
+(-1631203,'%s grows more unstable!',0,2,0,0,'rotface EMOTE_OOZE_GROW_1'),
+(-1631204,'%s is growing volatile!',0,2,0,0,'rotface EMOTE_OOZE_GROW_2'),
+(-1631205,'%s can barely maintain its form!',0,2,0,0,'rotface EMOTE_OOZE_GROW_3'),
+(-1631206,'%s begins to cast Unstable Experiment!',0,3,0,0,'putricide EMOTE_EXPERIMENT');
 
 -- -1 632 000 ICC: FORGE OF SOULS
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -6570,7 +6660,19 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 -- -1 668 000 ICC: HALLS OF REFLECTION
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
-(-1668000,'The master surveyed his kingdom and found it... Lacking. His judgement was swift and without mercy: DEATH TO ALL!',16738,1,0,0,'marwyn SAY_GAUNTLET');
+(-1668000,'The master surveyed his kingdom and found it... Lacking. His judgement was swift and without mercy: DEATH TO ALL!',16738,1,0,0,'marwyn SAY_GAUNTLET'),
+
+(-1668001,'Your allies have arrived, Jaina, just as you promised. You will all become powerful agents of the Scourge.',17212,1,0,0,'lich king SAY_ALLY_INTRO_1'),
+(-1668002,'He is too powerful, we must leave this place at once! My magic will hold him in place for only a short time! Come quickly, heroes!',16644,1,0,1,'jaina SAY_ALLY_INTRO_2'),
+(-1668003,'I will not make the same mistake again, Sylvanas. This time there will be no escape. You will all serve me in death!',17213,1,0,0,'lich king SAY_HORDE_INTRO_1'),
+(-1668004,'He\'s too powerful! Heroes, quickly, come to me! We must leave this place immediately! I will do what I can do hold him in place while we flee.',17058,1,0,1,'sylvanas SAY_HORDE_INTRO_2'),
+
+(-1668005,'Death\'s cold embrace awaits.',17221,1,0,0,'Lich King - SAY_FIRST_WALL'),
+(-1668006,'Succumb to the chill of the grave.',17218,1,0,0,'Lich King - SAY_SECOND_WALL'),
+(-1668007,'Another dead end.',17219,1,0,0,'Lich King - SAY_THIRD_WALL'),
+(-1668008,'How long can you fight it?',17220,1,0,0,'Lich King - SAY_LAST_WALL'),
+
+(-1668009,'Halt! Do not carry that blade any further!',16675,1,0,1,'Uther - SAY_INTRO_QUELDELAR');
 
 -- -1 724 000 RUBY SANCTUM
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -6828,6 +6930,15 @@ INSERT INTO gossip_texts (entry,content_default,comment) VALUES
 INSERT INTO gossip_texts (entry,content_default,comment) VALUES
 (-3609000,'I challenge you, death knight!','Death Knight Initiate GOSSIP_ITEM_ACCEPT_DUEL'),
 (-3609001,'I am ready, Highlord. Let the siege of Light\'s Hope begin!','Highlord Darion Mograine GOSSIP_ITEM_READY');
+
+-- -3 631 000 ICECROWN CITADEL
+INSERT INTO gossip_texts (entry,content_default,comment) VALUES
+(-3631000,'Teleport to the Light\'s Hammer.','GOSSIP_ITEM_TELE_LIGHTS_HAMMER'),
+(-3631001,'Teleport to the Oratory of the Damned.','GOSSIP_ITEM_TELE_ORATORY_DAMNED'),
+(-3631002,'Teleport to the Rampart of Skulls.','GOSSIP_ITEM_TELE_RAMPART_OF_SKULLS'),
+(-3631003,'Teleport to the Deathbringer\'s Rise.','GOSSIP_ITEM_TELE_DEATHBRINGERS_RISE'),
+(-3631004,'Teleport to the Upper Spire.','GOSSIP_ITEM_TELE_UPPER_SPIRE'),
+(-3631005,'Teleport to the Sindragosa\'s Lair.','GOSSIP_ITEM_TELE_SINDRAGOSAS_LAIR');
 
 -- -3 649 000 TRIAL OF CRUSADER
 INSERT INTO gossip_texts (entry,content_default,comment) VALUES
@@ -7908,37 +8019,44 @@ INSERT INTO script_waypoint VALUES
 
 DELETE FROM script_waypoint WHERE entry=17312;
 INSERT INTO script_waypoint VALUES
-(17312, 0, -4784.532227, -11051.060547, 3.484263, 0, ''),
-(17312, 1, -4805.509277, -11037.293945, 3.043942, 0, ''),
-(17312, 2, -4827.826172, -11034.398438, 1.741959, 0, ''),
-(17312, 3, -4852.630859, -11033.695313, 2.208656, 0, ''),
-(17312, 4, -4876.791992, -11034.517578, 3.175228, 0, ''),
-(17312, 5, -4895.486816, -11038.306641, 9.390890, 0, ''),
-(17312, 6, -4915.464844, -11048.402344, 12.369793, 0, ''),
-(17312, 7, -4937.288086, -11067.041992, 13.857983, 0, ''),
-(17312, 8, -4966.577637, -11067.507813, 15.754786, 0, ''),
-(17312, 9, -4993.799805, -11056.544922, 19.175295, 0, ''),
-(17312, 10, -5017.836426, -11052.569336, 22.476587, 0, ''),
-(17312, 11, -5039.706543, -11058.459961, 25.831593, 0, ''),
-(17312, 12, -5057.289063, -11045.474609, 26.972496, 0, ''),
-(17312, 13, -5078.828125, -11037.601563, 29.053417, 0, ''),
-(17312, 14, -5104.158691, -11039.195313, 29.440195, 0, ''),
-(17312, 15, -5120.780273, -11039.518555, 30.142139, 0, ''),
-(17312, 16, -5140.833008, -11039.810547, 28.788074, 0, ''),
-(17312, 17, -5161.201660, -11040.050781, 27.879545, 4000, ''),
-(17312, 18, -5171.842285, -11046.803711, 27.183821, 0, ''),
-(17312, 19, -5185.995117, -11056.359375, 20.234867, 0, ''),
-(17312, 20, -5198.485840, -11065.065430, 18.872593, 0, ''),
-(17312, 21, -5214.062500, -11074.653320, 19.215731, 0, ''),
-(17312, 22, -5220.157227, -11088.377930, 19.818476, 0, ''),
-(17312, 23, -5233.652832, -11098.846680, 18.349432, 0, ''),
-(17312, 24, -5250.163086, -11111.653320, 16.438959, 0, ''),
-(17312, 25, -5268.194336, -11125.639648, 12.668313, 0, ''),
-(17312, 26, -5286.270508, -11130.669922, 6.912246, 0, ''),
-(17312, 27, -5317.449707, -11137.392578, 4.963446, 0, ''),
-(17312, 28, -5334.854492, -11154.384766, 6.742664, 0, ''),
-(17312, 29, -5353.874512, -11171.595703, 6.903912, 20000, ''),
-(17312, 30, -5354.240000, -11171.940000, 6.890000, 0, '');
+(17312, 0, -4781.36, -11054.59, 2.475, 5000, 'SAY_START'),
+(17312, 1, -4786.90, -11050.34, 3.868, 0, ''),
+(17312, 2, -4830.30, -11043.16, 1.651, 0, ''),
+(17312, 3, -4833.82, -11038.03, 1.607, 0, ''),
+(17312, 4, -4856.62, -11034.52, 1.665, 0, ''),
+(17312, 5, -4876.67, -11030.61, 1.942, 0, ''),
+(17312, 6, -4881.06, -11035.62, 5.067, 0, ''),
+(17312, 7, -4904.61, -11042.72, 10.689, 0, ''),
+(17312, 8, -4913.10, -11050.98, 12.655, 0, ''),
+(17312, 9, -4924.45, -11059.15, 14.604, 0, ''),
+(17312, 10, -4939.89, -11066.83, 13.770, 0, ''),
+(17312, 11, -4951.94, -11067.57, 14.174, 0, ''),
+(17312, 12, -4971.94, -11064.94, 16.977, 0, ''),
+(17312, 13, -4995.02, -11068.19, 21.874, 0, ''),
+(17312, 14, -5017.98, -11055.18, 22.739, 0, ''),
+(17312, 15, -5036.87, -11039.66, 25.646, 0, ''),
+(17312, 16, -5064.00, -11026.98, 27.466, 0, ''),
+(17312, 17, -5086.48, -11029.29, 28.866, 0, ''),
+(17312, 18, -5108.68, -11034.53, 29.540, 0, ''),
+(17312, 19, -5133.68, -11038.84, 29.169, 0, ''),
+(17312, 20, -5163.79, -11042.22, 28.070, 4000, 'SAY_PROGRESS'),
+(17312, 21, -5161.12, -11052.87, 31.664, 0, ''),
+(17312, 22, -5160.37, -11066.50, 31.499, 0, ''),
+(17312, 23, -5165.48, -11071.66, 27.989, 0, ''),
+(17312, 24, -5177.59, -11076.63, 21.986, 0, ''),
+(17312, 25, -5193.23, -11084.35, 20.009, 0, ''),
+(17312, 26, -5207.54, -11090.39, 21.519, 0, ''),
+(17312, 27, -5252.69, -11098.85, 15.572, 0, ''),
+(17312, 28, -5268.33, -11105.29, 12.530, 0, ''),
+(17312, 29, -5282.29, -11113.06, 7.134, 0, ''),
+(17312, 30, -5302.01, -11127.28, 6.704, 0, ''),
+(17312, 31, -5317.62, -11139.31, 4.684, 0, ''),
+(17312, 32, -5319.09, -11140.54, 5.570, 0, ''),
+(17312, 33, -5344.95, -11163.43, 6.959, 2000, 'SAY_END1'),
+(17312, 34, -5344.95, -11163.43, 6.959, 1000, 'SAY_DAUGHTER'),
+(17312, 35, -5355.86, -11173.78, 6.853, 2000, 'EMOTE_HUG'),
+(17312, 36, -5355.86, -11173.78, 6.853, 5000, 'SAY_END2'),
+(17312, 37, -5355.86, -11173.78, 6.853, 0, '');
 
 DELETE FROM script_waypoint WHERE entry=17876;
 INSERT INTO script_waypoint VALUES
@@ -10551,5 +10669,48 @@ INSERT INTO script_waypoint VALUES
 (19671, 42, -67.692, -76.665, -0.941, 0, ''),
 (19671, 43, -67.624, -56.025, -0.844, 0, 'quest complete'),
 (19671, 44, -64.493, -15.776, -0.943, 0, '');
+
+DELETE FROM script_waypoint WHERE entry=17982;
+INSERT INTO script_waypoint VALUES
+(17982, 0, -1778.691, -11063.521, 77.140, 0, ''),
+(17982, 1, -1786.793, -11051.682, 77.624, 0, ''),
+(17982, 2, -1793.498, -11045.093, 76.965, 0, ''),
+(17982, 3, -1793.670, -11038.277, 76.308, 0, ''),
+(17982, 4, -1809.280, -11025.772, 68.239, 0, ''),
+(17982, 5, -1828.214, -11007.534, 67.414, 0, ''),
+(17982, 6, -1848.783, -10995.200, 65.269, 0, ''),
+(17982, 7, -1875.192, -10981.417, 61.316, 0, ''),
+(17982, 8, -1893.577, -10962.064, 61.258, 0, ''),
+(17982, 9, -1912.960, -10935.167, 61.436, 0, ''),
+(17982, 10, -1927.932, -10909.572, 62.588, 0, ''),
+(17982, 11, -1936.610, -10866.243, 66.684, 0, ''),
+(17982, 12, -1939.888, -10854.035, 69.186, 0, ''),
+(17982, 13, -1936.704, -10839.362, 73.829, 0, ''),
+(17982, 14, -1936.740, -10817.189, 81.554, 0, ''),
+(17982, 15, -1942.172, -10803.520, 86.075, 0, ''),
+(17982, 16, -1962.055, -10791.647, 88.658, 0, ''),
+(17982, 17, -1973.293, -10780.165, 88.985, 0, ''),
+(17982, 18, -1976.268, -10763.559, 90.655, 0, ''),
+(17982, 19, -1964.070, -10745.006, 95.730, 0, ''),
+(17982, 20, -1953.445, -10728.167, 104.113, 0, ''),
+(17982, 21, -1950.743, -10710.538, 111.087, 0, ''),
+(17982, 22, -1956.330, -10689.001, 110.965, 5000, 'SAY_ESCORT_LEGOSO_1'),
+(17982, 23, -1955.620, -10658.600, 110.883, 1000, 'escort paused, SAY_ESCORT_LEGOSO_2, SAY_ESCORT_LEGOSO_3'),
+(17982, 24, -1976.113, -10688.756, 112.680, 0, 'SAY_ESCORT_LEGOSO_4'),
+(17982, 25, -1985.777, -10699.355, 115.460, 1000, 'escort paused, SAY_ESCORT_COUNT_3'),
+(17982, 26, -2000.165, -10676.817, 118.616, 0, ''),
+(17982, 27, -2016.455, -10657.827, 125.049, 0, ''),
+(17982, 28, -2033.140, -10641.366, 137.672, 0, ''),
+(17982, 29, -2039.429, -10628.161, 144.266, 0, ''),
+(17982, 30, -2032.072, -10609.500, 148.143, 0, ''),
+(17982, 31, -2017.386, -10608.134, 153.232, 0, ''),
+(17982, 32, -1989.028, -10613.335, 162.852, 0, ''),
+(17982, 33, -1975.880, -10616.800, 163.837, 5000, 'SAY_ESCORT_LEGOSO_5, SAY_ESCORT_LEGOSO_6'),
+(17982, 34, -1957.047, -10596.522, 168.726, 0, ''),
+(17982, 35, -1944.290, -10580.700, 174.467, 13000, 'SAY_ESCORT_LEGOSO_7, SAY_ESCORT_LEGOSO_8'),
+(17982, 36, -1936.099, -10581.618, 176.737, 0, ''),
+(17982, 37, -1915.010, -10581.500, 178.105, 1000, 'escort paused, SAY_ESCORT_LEGOSO_9, SAY_ESCORT_LEGOSO_10'),
+(17982, 38, -1952.080, -10560.300, 177.657, 4000, 'SAY_ESCORT_COUNT_3, SAY_ESCORT_COUNT_2, SAY_ESCORT_COUNT_1'),
+(17982, 39, -1952.080, -10560.300, 177.657, 1000, 'escort paused, SAY_LEGOSO_AGGRO');
 
 -- EOF

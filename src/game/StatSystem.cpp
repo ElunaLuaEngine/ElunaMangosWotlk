@@ -189,7 +189,7 @@ void Player::UpdateArmor()
     UpdateAttackPowerAndDamage();                           // armor dependent auras update for SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR
 }
 
-float Player::GetHealthBonusFromStamina()
+float Player::GetHealthBonusFromStamina() const
 {
     float stamina = GetStat(STAT_STAMINA);
 
@@ -199,7 +199,7 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + (moreStam * 10.0f);
 }
 
-float Player::GetManaBonusFromIntellect()
+float Player::GetManaBonusFromIntellect() const
 {
     float intellect = GetStat(STAT_INTELLECT);
 
@@ -402,22 +402,18 @@ void Player::UpdateShieldBlockValue()
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, float& min_damage, float& max_damage)
 {
     UnitMods unitMod;
-    UnitMods attPower;
 
     switch (attType)
     {
         case BASE_ATTACK:
         default:
             unitMod = UNIT_MOD_DAMAGE_MAINHAND;
-            attPower = UNIT_MOD_ATTACK_POWER;
             break;
         case OFF_ATTACK:
             unitMod = UNIT_MOD_DAMAGE_OFFHAND;
-            attPower = UNIT_MOD_ATTACK_POWER;
             break;
         case RANGED_ATTACK:
             unitMod = UNIT_MOD_DAMAGE_RANGED;
-            attPower = UNIT_MOD_ATTACK_POWER_RANGED;
             break;
     }
 
@@ -501,7 +497,7 @@ void Player::UpdateBlockPercentage()
         value += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
         // Increase from rating
         value += GetRatingBonusValue(CR_BLOCK);
-        value = value < 0.0f ? 0.0f : value;
+        value = std::max(0.0f, std::min(value, 100.0f));
     }
     SetStatFloatValue(PLAYER_BLOCK_PERCENTAGE, value);
 }
@@ -535,7 +531,7 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
     // Modify crit from weapon skill and maximized defense skill of same level victim difference
     value += (int32(GetWeaponSkillValue(attType)) - int32(GetMaxSkillValueForLevel())) * 0.04f;
-    value = value < 0.0f ? 0.0f : value;
+    value = std::max(0.0f, std::min(value, 100.0f));
     SetStatFloatValue(index, value);
 }
 
@@ -601,7 +597,7 @@ void Player::UpdateParryPercentage()
         // apply diminishing formula to diminishing parry chance
         value = nondiminishing + diminishing * parry_cap[pclass] /
                 (diminishing + parry_cap[pclass] * m_diminishing_k[pclass]);
-        value = value < 0.0f ? 0.0f : value;
+        value = std::max(0.0f, std::min(value, 100.0f));
     }
     SetStatFloatValue(PLAYER_PARRY_PERCENTAGE, value);
 }
@@ -637,7 +633,7 @@ void Player::UpdateDodgePercentage()
     uint32 pclass = getClass() - 1;
     float value = nondiminishing + (diminishing * dodge_cap[pclass] /
                                     (diminishing + dodge_cap[pclass] * m_diminishing_k[pclass]));
-    value = value < 0.0f ? 0.0f : value;
+    value = std::max(0.0f, std::min(value, 100.0f));
     SetStatFloatValue(PLAYER_DODGE_PERCENTAGE, value);
 }
 
@@ -994,7 +990,6 @@ void Pet::UpdateResistances(uint32 school)
 
 void Pet::UpdateArmor()
 {
-    float value = 0.0f;
     float bonus_armor = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
@@ -1003,7 +998,7 @@ void Pet::UpdateArmor()
     if (owner && (getPetType() == HUNTER_PET || (getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)))
         bonus_armor = 0.35f * float(owner->GetArmor());
 
-    value  = GetModifierValue(unitMod, BASE_VALUE);
+    float value = GetModifierValue(unitMod, BASE_VALUE);
     value *= GetModifierValue(unitMod, BASE_PCT);
     value += GetStat(STAT_AGILITY) * 2.0f;
     value += GetModifierValue(unitMod, TOTAL_VALUE) + bonus_armor;
@@ -1044,7 +1039,7 @@ void Pet::UpdateAttackPowerAndDamage(bool ranged)
     if (ranged)
         return;
 
-    float val = 0.0f;
+    float val;
     float bonusAP = 0.0f;
     UnitMods unitMod = UNIT_MOD_ATTACK_POWER;
 

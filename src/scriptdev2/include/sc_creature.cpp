@@ -171,7 +171,7 @@ void ScriptedAI::DoCast(Unit* pTarget, uint32 uiSpellId, bool bTriggered)
     if (m_creature->IsNonMeleeSpellCasted(false) && !bTriggered)
         return;
 
-    m_creature->CastSpell(pTarget, uiSpellId, bTriggered);
+    m_creature->CastSpell(pTarget, uiSpellId, bTriggered ? TRIGGERED_OLD_TRIGGERED : TRIGGERED_NONE);
 }
 
 void ScriptedAI::DoCastSpell(Unit* pTarget, SpellEntry const* pSpellInfo, bool bTriggered)
@@ -179,7 +179,7 @@ void ScriptedAI::DoCastSpell(Unit* pTarget, SpellEntry const* pSpellInfo, bool b
     if (m_creature->IsNonMeleeSpellCasted(false) && !bTriggered)
         return;
 
-    m_creature->CastSpell(pTarget, pSpellInfo, bTriggered);
+    m_creature->CastSpell(pTarget, pSpellInfo, bTriggered ? TRIGGERED_OLD_TRIGGERED : TRIGGERED_NONE);
 }
 
 void ScriptedAI::DoPlaySoundToSet(WorldObject* pSource, uint32 uiSoundId)
@@ -223,7 +223,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, int32 uiSchool, int32 i
     // Check if each spell is viable(set it to null if not)
     for (uint8 i = 0; i < 4; ++i)
     {
-        pTempSpell = GetSpellStore()->LookupEntry(m_creature->m_spells[i]);
+        pTempSpell = GetSpellStore()->LookupEntry<SpellEntry>(m_creature->m_spells[i]);
 
         // This spell doesn't exist
         if (!pTempSpell)
@@ -316,16 +316,16 @@ bool ScriptedAI::CanCast(Unit* pTarget, SpellEntry const* pSpellEntry, bool bTri
 
 void FillSpellSummary()
 {
-    SpellSummary = new TSpellSummary[GetSpellStore()->GetNumRows()];
+    SpellSummary = new TSpellSummary[GetSpellStore()->GetMaxEntry()];
 
     SpellEntry const* pTempSpell;
 
-    for (uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i)
+    for (uint32 i = 0; i < GetSpellStore()->GetMaxEntry(); ++i)
     {
         SpellSummary[i].Effects = 0;
         SpellSummary[i].Targets = 0;
 
-        pTempSpell = GetSpellStore()->LookupEntry(i);
+        pTempSpell = GetSpellStore()->LookupEntry<SpellEntry>(i);
         // This spell doesn't exist
         if (!pTempSpell)
             continue;

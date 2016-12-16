@@ -167,11 +167,7 @@ struct boss_gurtogg_bloodboilAI : public ScriptedAI
             if (m_uiEjectTimer < uiDiff)
             {
                 if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_EJECT_1) == CAST_OK)
-                {
-                    // Script effect: reduce threat on main target
-                    m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(), -40);
                     m_uiEjectTimer = 15000;
-                }
             }
             else
                 m_uiEjectTimer -= uiDiff;
@@ -242,7 +238,7 @@ struct boss_gurtogg_bloodboilAI : public ScriptedAI
                         DoCastSpellIfCan(pTarget, SPELL_FEL_RAGE_PLAYER_2, CAST_TRIGGERED);
                         DoCastSpellIfCan(pTarget, SPELL_FEL_RAGE_PLAYER_3, CAST_TRIGGERED);
                         // Allow player to taunt Gurtogg
-                        pTarget->CastSpell(m_creature, SPELL_TAUNT_GURTOGG, true);
+                        pTarget->CastSpell(m_creature, SPELL_TAUNT_GURTOGG, TRIGGERED_OLD_TRIGGERED);
 
                         // Don't allow others to generate threat
                         DoCastSpellIfCan(m_creature, SPELL_INSIGNIFIGANCE, CAST_TRIGGERED);

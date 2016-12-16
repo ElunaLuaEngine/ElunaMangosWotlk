@@ -25,7 +25,6 @@
 #include "Opcodes.h"
 #include "Guild.h"
 #include "GuildMgr.h"
-#include "GossipDef.h"
 #include "SocialMgr.h"
 #include "Calendar.h"
 #include "LuaEngine.h"
@@ -74,7 +73,7 @@ void WorldSession::SendGuildInvite(Player* player, bool alreadyInGuild /*= false
     WorldPacket data(SMSG_GUILD_INVITE, (8 + 10));          // guess size
     data << GetPlayer()->GetName();
     data << guild->GetName();
-    player->GetSession()->SendPacket(&data);                                  // unk
+    player->GetSession()->SendPacket(data);                                  // unk
 }
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
@@ -142,7 +141,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     WorldPacket data(SMSG_GUILD_INVITE, (8 + 10));          // guess size
     data << GetPlayer()->GetName();
     data << guild->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->GetSession()->SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent (SMSG_GUILD_INVITE)");
 }
@@ -251,7 +250,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
     data << uint32(secsToTimeBitFields(guild->GetCreatedDate())); // 3.x (prev. day + month + year)
     data << uint32(guild->GetMemberSize());                 // amount of chars
     data << uint32(guild->GetAccountsNumber());             // amount of accounts
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
@@ -693,13 +692,13 @@ void WorldSession::HandleGuildDelRankOpcode(WorldPacket& /*recvPacket*/)
     guild->Roster();                                        // broadcast for tab rights update
 }
 
-void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str, uint32 cmdresult)
+void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str, uint32 cmdresult) const
 {
     WorldPacket data(SMSG_GUILD_COMMAND_RESULT, (8 + str.size() + 1));
     data << typecmd;
     data << str;
     data << cmdresult;
-    SendPacket(&data);
+    SendPacket(data);
 
     DEBUG_LOG("WORLD: Sent (SMSG_GUILD_COMMAND_RESULT)");
 }
@@ -745,10 +744,6 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
         DEBUG_LOG("WORLD: HandleSaveGuildEmblemOpcode - %s not found or you can't interact with him.", vendorGuid.GetString().c_str());
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     Guild* guild = sGuildMgr.GetGuildById(GetPlayer()->GetGuildId());
     if (!guild)
@@ -824,7 +819,7 @@ void WorldSession::HandleGuildPermissions(WorldPacket& /* recv_data */)
                 data << uint32(pGuild->GetBankRights(rankId, uint8(i)));
                 data << uint32(pGuild->GetMemberSlotWithdrawRem(GetPlayer()->GetGUIDLow(), uint8(i)));
             }
-            SendPacket(&data);
+            SendPacket(data);
             DEBUG_LOG("WORLD: Sent (MSG_GUILD_PERMISSIONS)");
         }
     }
@@ -1241,9 +1236,9 @@ void WorldSession::HandleSetGuildBankTabText(WorldPacket& recv_data)
     pGuild->SetGuildBankTabText(TabId, Text);
 }
 
-void WorldSession::SendSaveGuildEmblem(uint32 msg)
+void WorldSession::SendSaveGuildEmblem(uint32 msg) const
 {
     WorldPacket data(MSG_SAVE_GUILD_EMBLEM, 4);
     data << uint32(msg);                                    // not part of guild
-    SendPacket(&data);
+    SendPacket(data);
 }

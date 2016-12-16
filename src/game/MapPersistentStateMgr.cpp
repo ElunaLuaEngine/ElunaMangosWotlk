@@ -20,17 +20,13 @@
 
 #include "MapPersistentStateMgr.h"
 
-#include "SQLStorages.h"
 #include "Player.h"
-#include "GridNotifiers.h"
 #include "Log.h"
-#include "GridStates.h"
 #include "CellImpl.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "Timer.h"
 #include "GridNotifiersImpl.h"
-#include "Transports.h"
 #include "ObjectMgr.h"
 #include "GameEventMgr.h"
 #include "World.h"
@@ -273,7 +269,7 @@ void DungeonPersistentState::DeleteRespawnTimes()
     ClearRespawnTimes();                                    // state can be deleted at call if only respawn data prevent unload
 }
 
-void DungeonPersistentState::DeleteFromDB()
+void DungeonPersistentState::DeleteFromDB() const
 {
     MapPersistentStateManager::DeleteInstanceFromDB(GetInstanceId());
 }
@@ -540,8 +536,8 @@ void DungeonResetScheduler::ScheduleReset(bool add, time_t time, DungeonResetEve
 
 void DungeonResetScheduler::Update()
 {
-    time_t now = time(nullptr), t;
-    while (!m_resetTimeQueue.empty() && (t = m_resetTimeQueue.begin()->first) < now)
+    time_t now = time(nullptr);
+    while (!m_resetTimeQueue.empty() && m_resetTimeQueue.begin()->first < now)
     {
         DungeonResetEvent& event = m_resetTimeQueue.begin()->second;
         if (event.type == RESET_EVENT_NORMAL_DUNGEON)
@@ -738,7 +734,7 @@ void MapPersistentStateManager::RemovePersistentState(uint32 mapId, uint32 insta
     }
 }
 
-void MapPersistentStateManager::_DelHelper(DatabaseType& db, const char* fields, const char* table, const char* queryTail, ...)
+void MapPersistentStateManager::_DelHelper(DatabaseType& db, const char* fields, const char* table, const char* queryTail, ...) const
 {
     Tokens fieldTokens = StrSplit(fields, ", ");
     MANGOS_ASSERT(fieldTokens.size() != 0);
@@ -754,11 +750,11 @@ void MapPersistentStateManager::_DelHelper(DatabaseType& db, const char* fields,
     {
         do
         {
-            Field* fields = result->Fetch();
+            Field* resultFields = result->Fetch();
             std::ostringstream ss;
             for (size_t i = 0; i < fieldTokens.size(); ++i)
             {
-                std::string fieldValue = fields[i].GetCppString();
+                std::string fieldValue = resultFields[i].GetCppString();
                 db.escape_string(fieldValue);
                 ss << (i != 0 ? " AND " : "") << fieldTokens[i] << " = '" << fieldValue << "'";
             }
@@ -801,7 +797,7 @@ void MapPersistentStateManager::CleanupInstances()
     sLog.outString();
 }
 
-void MapPersistentStateManager::PackInstances()
+void MapPersistentStateManager::PackInstances() const
 {
     // this routine renumbers player instance associations in such a way so they start from 1 and go up
     // TODO: this can be done a LOT more efficiently

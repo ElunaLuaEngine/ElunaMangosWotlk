@@ -424,8 +424,8 @@ enum SpellCastTargetFlags
     TARGET_FLAG_OBJECT          = 0x00000800,               // pguid, 2 spells
     TARGET_FLAG_TRADE_ITEM      = 0x00001000,               // pguid, 0 spells
     TARGET_FLAG_STRING          = 0x00002000,               // string, 0 spells
-    TARGET_FLAG_UNK1            = 0x00004000,               // 199 spells, opening object/lock
-    TARGET_FLAG_CORPSE          = 0x00008000,               // pguid, resurrection spells
+    TARGET_FLAG_GAMEOBJECT_ITEM = 0x00004000,               // 199 spells, opening object/lock
+    TARGET_FLAG_CORPSE_ALLY     = 0x00008000,               // pguid, resurrection spells
     TARGET_FLAG_UNK2            = 0x00010000,               // pguid, not used in any spells as of 3.0.3 (can be set dynamically)
     TARGET_FLAG_GLYPH           = 0x00020000,               // used in glyph spells
     TARGET_FLAG_UNK3            = 0x00040000,               //
@@ -486,7 +486,7 @@ enum VehicleFlags
     VEHICLE_FLAG_UNK11              = 0x00040000,
     VEHICLE_FLAG_UNK12              = 0x00080000,
     VEHICLE_FLAG_UNK13              = 0x00100000,
-    VEHICLE_FLAG_UNK14              = 0x00200000,
+    VEHICLE_FLAG_FIXED_POSITION     = 0x00200000,           // Used for vehicles that have a fixed position, such as cannons
     VEHICLE_FLAG_DISABLE_SWITCH     = 0x00400000,           // Can't change seats, VEHICLE_ID = 335 chopper
     VEHICLE_FLAG_UNK15              = 0x00800000,
     VEHICLE_FLAG_UNK16              = 0x01000000,

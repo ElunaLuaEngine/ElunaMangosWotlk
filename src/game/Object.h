@@ -27,7 +27,6 @@
 #include "Camera.h"
 
 #include <set>
-#include <string>
 
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
@@ -56,6 +55,12 @@ enum TempSummonType
     TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN     = 7,             // despawns after a specified time OR when the creature dies
     TEMPSUMMON_TIMED_OOC_OR_DEAD_DESPAWN   = 8,             // despawns after a specified time (OOC) OR when the creature disappears
     TEMPSUMMON_TIMED_OOC_OR_CORPSE_DESPAWN = 9,             // despawns after a specified time (OOC) OR when the creature dies
+};
+
+enum TempSummonLinkedAura
+{
+    TEMPSUMMON_LINKED_AURA_OWNER_CHECK  = 0x00000001,
+    TEMPSUMMON_LINKED_AURA_REMOVE_OWNER = 0x00000002
 };
 
 enum PhaseMasks
@@ -163,10 +168,10 @@ class MANGOS_DLL_SPEC Object
         void SetObjectScale(float newScale);
 
         uint8 GetTypeId() const { return m_objectTypeId; }
-        bool isType(TypeMask mask) const { return (mask & m_objectType); }
+        bool isType(TypeMask mask) const { return !!(mask & m_objectType); }
 
         virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
-        void SendCreateUpdateToPlayer(Player* player);
+        void SendCreateUpdateToPlayer(Player* player) const;
 
         // must be overwrite in appropriate subclasses (WorldObject, Item currently), or will crash
         virtual void AddToClientUpdateList();
@@ -254,7 +259,6 @@ class MANGOS_DLL_SPEC Object
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModInt32Value(uint16 index, int32 val, bool apply);
-        void ApplyModUInt64Value(uint16 index, int32 val, bool apply);
         void ApplyModPositiveFloatValue(uint16 index, float val, bool apply);
         void ApplyModSignedFloatValue(uint16 index, float val, bool apply);
 
@@ -384,6 +388,7 @@ class MANGOS_DLL_SPEC Object
 
         virtual bool HasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool HasInvolvedQuest(uint32 /* quest_id */) const { return false; }
+        void SetItsNewObject(bool enable) { m_itsNewObject = enable; }
 
         Loot* loot;
 
@@ -399,7 +404,7 @@ class MANGOS_DLL_SPEC Object
 
         void BuildMovementUpdate(ByteBuffer* data, uint16 updateFlags) const;
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* updateMask, Player* target) const;
-        void BuildUpdateDataForPlayer(Player* pl, UpdateDataMapType& update_players);
+        void BuildUpdateDataForPlayer(Player* pl, UpdateDataMapType& update_players) const;
 
         uint16 m_objectType;
 
@@ -421,6 +426,7 @@ class MANGOS_DLL_SPEC Object
 
     private:
         bool m_inWorld;
+        bool m_itsNewObject;
 
         PackedGuid m_PackGUID;
 
@@ -533,7 +539,7 @@ class MANGOS_DLL_SPEC WorldObject : public Object
         virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
         uint32 GetPhaseMask() const { return m_phaseMask; }
         bool InSamePhase(WorldObject const* obj) const { return InSamePhase(obj->GetPhaseMask()); }
-        bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
+        bool InSamePhase(uint32 phasemask) const { return !!(GetPhaseMask() & phasemask); }
 
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
@@ -553,7 +559,7 @@ class MANGOS_DLL_SPEC WorldObject : public Object
         float GetDistanceZ(const WorldObject* obj) const;
         bool IsInMap(const WorldObject* obj) const
         {
-            return IsInWorld() && obj->IsInWorld() && (GetMap() == obj->GetMap()) && InSamePhase(obj);
+            return obj && IsInWorld() && obj->IsInWorld() && (GetMap() == obj->GetMap()) && InSamePhase(obj);
         }
         bool IsWithinDist3d(float x, float y, float z, float dist2compare) const;
         bool IsWithinDist2d(float x, float y, float dist2compare) const;
@@ -583,12 +589,14 @@ class MANGOS_DLL_SPEC WorldObject : public Object
         bool isInBackInMap(WorldObject const* target, float distance, float arc = M_PI) const;
         bool isInFront(WorldObject const* target, float distance, float arc = M_PI) const;
         bool isInBack(WorldObject const* target, float distance, float arc = M_PI) const;
+        bool IsFacingTargetsBack(const WorldObject* target, float arc = M_PI_F) const;
+        bool IsFacingTargetsFront(const WorldObject* target, float arc = M_PI_F) const;
 
         virtual void CleanupsBeforeDelete();                // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
-        virtual void SendMessageToSet(WorldPacket* data, bool self) const;
-        virtual void SendMessageToSetInRange(WorldPacket* data, float dist, bool self) const;
-        void SendMessageToSetExcept(WorldPacket* data, Player const* skipped_receiver) const;
+        virtual void SendMessageToSet(WorldPacket const& data, bool self) const;
+        virtual void SendMessageToSetInRange(WorldPacket const& data, float dist, bool self) const;
+        void SendMessageToSetExcept(WorldPacket const& data, Player const* skipped_receiver) const;
 
         void MonsterSay(const char* text, uint32 language, Unit const* target = nullptr) const;
         void MonsterYell(const char* text, uint32 language, Unit const* target = nullptr) const;
@@ -600,8 +608,8 @@ class MANGOS_DLL_SPEC WorldObject : public Object
         void PlayDirectSound(uint32 sound_id, Player const* target = nullptr) const;
         void PlayMusic(uint32 sound_id, Player const* target = nullptr) const;
 
-        void SendObjectDeSpawnAnim(ObjectGuid guid);
-        void SendGameObjectCustomAnim(ObjectGuid guid, uint32 animId = 0);
+        void SendObjectDeSpawnAnim(ObjectGuid guid) const;
+        void SendGameObjectCustomAnim(ObjectGuid guid, uint32 animId = 0) const;
 
         virtual bool IsHostileTo(Unit const* unit) const = 0;
         virtual bool IsFriendlyTo(Unit const* unit) const = 0;
@@ -631,7 +639,7 @@ class MANGOS_DLL_SPEC WorldObject : public Object
         void RemoveFromClientUpdateList() override;
         void BuildUpdateData(UpdateDataMapType&) override;
 
-        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype, uint32 despwtime, bool asActiveObject = false);
+        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype, uint32 despwtime, bool asActiveObject = false, bool setRun = false);
         GameObject* SummonGameObject(uint32 id, float x, float y, float z, float angle, uint32 despwtime);
 
         bool isActiveObject() const { return m_isActiveObject || m_viewPoint.hasViewers(); }

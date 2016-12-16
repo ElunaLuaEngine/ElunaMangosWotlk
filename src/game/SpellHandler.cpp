@@ -110,7 +110,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     // only allow conjured consumable, bandage, poisons (all should have the 2^21 item flag set in DB)
     if (proto->Class == ITEM_CLASS_CONSUMABLE &&
-            !(proto->Flags & ITEM_FLAG_USEABLE_IN_ARENA) &&
+            !(proto->Flags & ITEM_FLAG_IGNORE_DEFAULT_ARENA_RESTRICTIONS) &&
             pUser->InArena())
     {
         recvPacket.rpos(recvPacket.wpos());                 // prevent spam at not read packet tail
@@ -122,7 +122,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
         {
-            if (SpellEntry const* spellInfo = sSpellStore.LookupEntry(proto->Spells[i].SpellId))
+            if (SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -164,7 +164,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         pUser->SendEquipError(EQUIP_ERR_NONE, pItem, nullptr);
 
         // send spell error
-        if (SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellid))
+        if (SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellid))
         {
             // for implicit area/coord target spells
             if (IsPointEffectTarget(Targets(spellInfo->EffectImplicitTargetA[EFFECT_INDEX_0])) ||
@@ -362,7 +362,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     DEBUG_LOG("WORLD: got cast spell packet, spellId - %u, cast_count: %u, unk_flags %u, data length = " SIZEFMTD,
               spellId, cast_count, unk_flags, recvPacket.size());
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
     if (!spellInfo)
     {
         sLog.outError("WORLD: unknown spell id %u", spellId);
@@ -429,7 +429,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     Spell* spell = new Spell(mover, spellInfo, triggeredByAura ? true : false, mover->GetObjectGuid(), triggeredByAura ? triggeredByAura->GetSpellProto() : nullptr);
     spell->m_cast_count = cast_count;                       // set count of casts
-    spell->prepare(&targets, triggeredByAura);
+    spell->SpellStart(&targets, triggeredByAura);
 }
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
@@ -457,7 +457,7 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
     if (!spellInfo)
         return;
 
@@ -467,7 +467,12 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
     if (IsPassiveSpell(spellInfo))
         return;
 
-    if (!IsPositiveSpell(spellId))
+    SpellAuraHolder* holder = _player->GetSpellAuraHolder(spellId);
+
+    if (!holder)
+        return;
+
+    if (!IsPositiveSpell(spellId, holder->GetCaster(), _player))
     {
         // ignore for remote control state
         if (!_player->IsSelfMover())
@@ -501,8 +506,6 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    SpellAuraHolder* holder = _player->GetSpellAuraHolder(spellId);
-
     // not own area auras can't be cancelled (note: maybe need to check for aura on holder and not general on spell)
     if (holder && holder->GetCasterGuid() != _player->GetObjectGuid() && HasAreaAuraEffect(holder->GetSpellProto()))
         return;
@@ -523,7 +526,7 @@ void WorldSession::HandlePetCancelAuraOpcode(WorldPacket& recvPacket)
     if (!_player->IsSelfMover())
         return;
 
-    SpellEntry const* spellInfo = sSpellStore.LookupEntry(spellId);
+    SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(spellId);
     if (!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
@@ -605,9 +608,9 @@ void WorldSession::HandleSelfResOpcode(WorldPacket& /*recv_data*/)
 
     if (_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const* spellInfo = sSpellStore.LookupEntry(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellEntry const* spellInfo = sSpellTemplate.LookupEntry<SpellEntry>(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if (spellInfo)
-            _player->CastSpell(_player, spellInfo, false);
+            _player->CastSpell(_player, spellInfo, TRIGGERED_NONE);
 
         _player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
     }
@@ -638,7 +641,7 @@ void WorldSession::HandleSpellClick(WorldPacket& recv_data)
             Unit* target = (itr->second.castFlags & 0x2) ? (Unit*)_player : (Unit*)unit;
 
             if (itr->second.spellId)
-                caster->CastSpell(target, itr->second.spellId, true);
+                caster->CastSpell(target, itr->second.spellId, TRIGGERED_OLD_TRIGGERED);
             else
                 sLog.outError("WorldSession::HandleSpellClick: npc_spell_click with entry %u has 0 in spell_id. Not handled custom case?", unit->GetEntry());
         }
@@ -728,5 +731,5 @@ void WorldSession::HandleGetMirrorimageData(WorldPacket& recv_data)
             data << (uint32)0;
     }
 
-    SendPacket(&data);
+    SendPacket(data);
 }

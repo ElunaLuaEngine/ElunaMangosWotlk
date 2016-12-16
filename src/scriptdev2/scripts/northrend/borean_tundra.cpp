@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Borean_Tundra
 SD%Complete: 100
-SDComment: Quest support: 11570, 11590, 11673, 11728, 11865, 11881, 11889, 11897, 11919, 11940.
+SDComment: Quest support: 11570, 11590, 11608, 11673, 11728, 11865, 11881, 11889, 11897, 11919, 11940.
 SDCategory: Borean Tundra
 EndScriptData */
 
@@ -557,8 +557,8 @@ bool EffectAuraDummy_npc_beryl_sorcerer(const Aura* pAura, bool bApply)
             return false;
 
         // spawn the captured sorcerer, apply dummy aura on the summoned and despawn
-        pCaster->CastSpell(pCreature, SPELL_SUMMON_CHAINS_CHARACTER, true);
-        pCaster->CastSpell(pCaster, SPELL_ARCANE_CHAINS_CHANNEL, true);
+        pCaster->CastSpell(pCreature, SPELL_SUMMON_CHAINS_CHARACTER, TRIGGERED_OLD_TRIGGERED);
+        pCaster->CastSpell(pCaster, SPELL_ARCANE_CHAINS_CHANNEL, TRIGGERED_OLD_TRIGGERED);
         pCreature->ForcedDespawn();
         return true;
     }
@@ -663,11 +663,11 @@ struct npc_nexus_drake_hatchlingAI : public FollowerAI
             if (!pPlayer || !pPlayer->HasAura(SPELL_DRAKE_HATCHLING_SUBDUED))
                 return;
 
-            pWho->CastSpell(pPlayer, SPELL_STRIP_AURAS, true);
+            pWho->CastSpell(pPlayer, SPELL_STRIP_AURAS, TRIGGERED_OLD_TRIGGERED);
 
             // give kill credit, mark the follow as completed and start the final event
             pPlayer->KilledMonsterCredit(NPC_COLDARRA_DRAKE_HUNT_INVISMAN);
-            pPlayer->CastSpell(m_creature, SPELL_DRAKE_TURN_IN, true);
+            pPlayer->CastSpell(m_creature, SPELL_DRAKE_TURN_IN, TRIGGERED_OLD_TRIGGERED);
             SetFollowComplete(true);
         }
     }
@@ -755,7 +755,7 @@ bool EffectAuraDummy_npc_nexus_drake_hatchling(const Aura* pAura, bool bApply)
         if (pCreature->HasAura(SPELL_RED_DRAGONBLOOD) || pCreature->HasAura(SPELL_SUBDUED))
             return false;
 
-        pCaster->CastSpell(pCreature, SPELL_RED_DRAGONBLOOD, true);
+        pCaster->CastSpell(pCreature, SPELL_RED_DRAGONBLOOD, TRIGGERED_OLD_TRIGGERED);
         return true;
     }
     else if (pAura->GetId() == SPELL_RED_DRAGONBLOOD && pAura->GetEffIndex() == EFFECT_INDEX_0)
@@ -769,7 +769,7 @@ bool EffectAuraDummy_npc_nexus_drake_hatchling(const Aura* pAura, bool bApply)
         if (bApply)
             pCreature->AI()->AttackStart(pCaster);
         else
-            pCaster->CastSpell(pCreature, SPELL_CAPTURE_TRIGGER, true);
+            pCaster->CastSpell(pCreature, SPELL_CAPTURE_TRIGGER, TRIGGERED_OLD_TRIGGERED);
 
         return true;
     }
@@ -812,9 +812,9 @@ bool EffectDummyCreature_npc_nexus_drake_hatchling(Unit* pCaster, uint32 uiSpell
         pCreatureTarget->AI()->SendAIEvent(AI_EVENT_START_EVENT, pCaster, pCreatureTarget);
 
         // cast visual spells
-        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_DRAKE_VOMIT_PERIODIC, true);
-        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_SUBDUED, true);
-        pCreatureTarget->CastSpell(pCaster, SPELL_DRAKE_HATCHLING_SUBDUED, true);
+        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_DRAKE_VOMIT_PERIODIC, TRIGGERED_OLD_TRIGGERED);
+        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_SUBDUED, TRIGGERED_OLD_TRIGGERED);
+        pCreatureTarget->CastSpell(pCaster, SPELL_DRAKE_HATCHLING_SUBDUED, TRIGGERED_OLD_TRIGGERED);
 
         return true;
     }
@@ -823,7 +823,7 @@ bool EffectDummyCreature_npc_nexus_drake_hatchling(Unit* pCaster, uint32 uiSpell
         if (Creature* pRaelorasz = GetClosestCreatureWithEntry(pCreatureTarget, NPC_RAELORASZ, 30.0f))
         {
             // Inform Raelorasz and move in front of him
-            pCreatureTarget->CastSpell(pRaelorasz, SPELL_DRAKE_COMPLETION_PING, true);
+            pCreatureTarget->CastSpell(pRaelorasz, SPELL_DRAKE_COMPLETION_PING, TRIGGERED_OLD_TRIGGERED);
 
             float fX, fY, fZ;
             pRaelorasz->GetContactPoint(pCreatureTarget, fX, fY, fZ, CONTACT_DISTANCE);
@@ -834,7 +834,7 @@ bool EffectDummyCreature_npc_nexus_drake_hatchling(Unit* pCaster, uint32 uiSpell
     }
     else if (uiSpellId == SPELL_RAELORASZ_FIREBALL && uiEffIndex == EFFECT_INDEX_0 && pCreatureTarget->GetEntry() == NPC_NEXUS_DRAKE_HATCHLING)
     {
-        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_COMPLETE_IMMOLATION, true);
+        pCreatureTarget->CastSpell(pCreatureTarget, SPELL_COMPLETE_IMMOLATION, TRIGGERED_OLD_TRIGGERED);
         pCreatureTarget->SetStandState(UNIT_STAND_STATE_DEAD);
         pCreatureTarget->ForcedDespawn(10000);
 
@@ -1151,6 +1151,50 @@ CreatureAI* GetAI_npc_jenny(Creature* pCreature)
     return new npc_jennyAI(pCreature);
 }
 
+/*######
+## npc_seaforium_depth_charge
+######*/
+
+enum
+{
+    SPELL_SEAFORIUM_DEPTH_EXPLOSION         = 45502,
+};
+
+// Note: Creature is summoned as a TotemAI in the core. This script is required in order to tweak the creature's behavior
+struct npc_seaforium_depth_chargeAI : public Scripted_NoMovementAI
+{
+    npc_seaforium_depth_chargeAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature) { Reset(); }
+
+    uint32 m_uiExplosionTimer;
+
+    void Reset() override
+    {
+        m_uiExplosionTimer = 10000;
+    }
+
+    void AttackStart(Unit* /*pWho*/) override { }
+    void MoveInLineOfSight(Unit* /*pWho*/) override { }
+
+    void UpdateAI(const uint32 uiDiff) override
+    {
+        if (m_uiExplosionTimer < uiDiff)
+        {
+            if (DoCastSpellIfCan(m_creature, SPELL_SEAFORIUM_DEPTH_EXPLOSION) == CAST_OK)
+            {
+                m_creature->ForcedDespawn(1000);
+                m_uiExplosionTimer = 10000;
+            }
+        }
+        else
+            m_uiExplosionTimer -= uiDiff;
+    }
+};
+
+CreatureAI* GetAI_npc_seaforium_depth_charge(Creature* pCreature)
+{
+    return new npc_seaforium_depth_chargeAI(pCreature);
+}
+
 void AddSC_borean_tundra()
 {
     Script* pNewScript;
@@ -1210,5 +1254,10 @@ void AddSC_borean_tundra()
     pNewScript = new Script;
     pNewScript->Name = "npc_jenny";
     pNewScript->GetAI = &GetAI_npc_jenny;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "npc_seaforium_depth_charge";
+    pNewScript->GetAI = &GetAI_npc_seaforium_depth_charge;
     pNewScript->RegisterSelf();
 }

@@ -70,7 +70,7 @@ namespace MaNGOS
     };
 }                                                           // namespace MaNGOS
 
-bool AchievementCriteriaRequirement::IsValid(AchievementCriteriaEntry const* criteria)
+bool AchievementCriteriaRequirement::IsValid(AchievementCriteriaEntry const* criteria) const
 {
     switch (criteria->requiredType)
     {
@@ -152,7 +152,7 @@ bool AchievementCriteriaRequirement::IsValid(AchievementCriteriaEntry const* cri
         case ACHIEVEMENT_CRITERIA_REQUIRE_S_AURA:
         case ACHIEVEMENT_CRITERIA_REQUIRE_T_AURA:
         {
-            SpellEntry const* spellEntry = sSpellStore.LookupEntry(aura.spell_id);
+            SpellEntry const* spellEntry = sSpellTemplate.LookupEntry<SpellEntry>(aura.spell_id);
             if (!spellEntry)
             {
                 sLog.outErrorDb("Table `achievement_criteria_requirement` (Entry: %u Type: %u) for requirement %s (%u) have wrong spell id in value1 (%u), ignore.",
@@ -400,14 +400,14 @@ void AchievementMgr::Reset()
     {
         WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4);
         data << uint32(iter->first);
-        m_player->SendDirectMessage(&data);
+        m_player->SendDirectMessage(data);
     }
 
     for (CriteriaProgressMap::const_iterator iter = m_criteriaProgress.begin(); iter != m_criteriaProgress.end(); ++iter)
     {
         WorldPacket data(SMSG_CRITERIA_DELETED, 4);
         data << uint32(iter->first);
-        m_player->SendDirectMessage(&data);
+        m_player->SendDirectMessage(data);
     }
 
     m_completedAchievements.clear();
@@ -604,7 +604,7 @@ void AchievementMgr::LoadFromDB(QueryResult* achievementResult, QueryResult* cri
     }
 }
 
-void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
+void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement) const
 {
     if (GetPlayer()->GetSession()->PlayerLoading())
         return;
@@ -626,7 +626,7 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
         data << GetPlayer()->GetObjectGuid();
         data << uint32(achievement->ID);
         data << uint32(0);                                  // 1=link supplied string as player name, 0=display plain string
-        sWorld.SendGlobalMessage(&data);
+        sWorld.SendGlobalMessage(data);
     }
     // if player is in world he can tell his friends about new achievement
     else if (GetPlayer()->IsInWorld())
@@ -643,10 +643,10 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
     data << uint32(achievement->ID);
     data << uint32(secsToTimeBitFields(time(nullptr)));
     data << uint32(0);
-    GetPlayer()->SendMessageToSetInRange(&data, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY), true);
+    GetPlayer()->SendMessageToSetInRange(data, sWorld.getConfig(CONFIG_FLOAT_LISTEN_RANGE_SAY), true);
 }
 
-void AchievementMgr::SendCriteriaUpdate(uint32 id, CriteriaProgress const* progress)
+void AchievementMgr::SendCriteriaUpdate(uint32 id, CriteriaProgress const* progress) const
 {
     WorldPacket data(SMSG_CRITERIA_UPDATE, 8 + 4 + 8);
     data << uint32(id);
@@ -660,7 +660,7 @@ void AchievementMgr::SendCriteriaUpdate(uint32 id, CriteriaProgress const* progr
     data << uint32(secsToTimeBitFields(now));
     data << uint32(now - progress->date);                   // timer 1
     data << uint32(now - progress->date);                   // timer 2
-    GetPlayer()->SendDirectMessage(&data);
+    GetPlayer()->SendDirectMessage(data);
 }
 
 /**
@@ -731,7 +731,7 @@ void AchievementMgr::StartTimedAchievementCriteria(AchievementCriteriaTypes type
         if (startTime && time_t(startTime + achievementCriteria->timeLimit) < time(nullptr))
             continue;
 
-        CriteriaProgress* progress = nullptr;
+        CriteriaProgress* progress;
 
         CriteriaProgressMap::iterator iter = m_criteriaProgress.find(achievementCriteria->ID);
         if (iter == m_criteriaProgress.end())
@@ -1009,8 +1009,8 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT:
             {
                 uint32 counter = 0;
-                for (QuestStatusMap::const_iterator itr = GetPlayer()->getQuestStatusMap().begin(); itr != GetPlayer()->getQuestStatusMap().end(); ++itr)
-                    if (itr->second.m_rewarded)
+                for (QuestStatusMap::const_iterator questItr = GetPlayer()->getQuestStatusMap().begin(); questItr != GetPlayer()->getQuestStatusMap().end(); ++questItr)
+                    if (questItr->second.m_rewarded)
                         ++counter;
                 change = counter;
                 progressType = PROGRESS_HIGHEST;
@@ -1023,10 +1023,10 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                     continue;
 
                 uint32 counter = 0;
-                for (QuestStatusMap::const_iterator itr = GetPlayer()->getQuestStatusMap().begin(); itr != GetPlayer()->getQuestStatusMap().end(); ++itr)
+                for (QuestStatusMap::const_iterator questItr = GetPlayer()->getQuestStatusMap().begin(); questItr != GetPlayer()->getQuestStatusMap().end(); ++questItr)
                 {
-                    Quest const* quest = sObjectMgr.GetQuestTemplate(itr->first);
-                    if (itr->second.m_rewarded && quest->GetZoneOrSort() >= 0 && uint32(quest->GetZoneOrSort()) == achievementCriteria->complete_quests_in_zone.zoneID)
+                    Quest const* quest = sObjectMgr.GetQuestTemplate(questItr->first);
+                    if (questItr->second.m_rewarded && quest->GetZoneOrSort() >= 0 && uint32(quest->GetZoneOrSort()) == achievementCriteria->complete_quests_in_zone.zoneID)
                         ++counter;
                 }
                 change = counter;
@@ -1991,7 +1991,7 @@ void AchievementMgr::SetCriteriaProgress(AchievementCriteriaEntry const* criteri
     if (changeValue > max_value)
         changeValue = max_value;
 
-    CriteriaProgress* progress = nullptr;
+    CriteriaProgress* progress;
     uint32 old_value = 0;
     uint32 newValue = 0;
 
@@ -2081,7 +2081,7 @@ void AchievementMgr::SetCriteriaProgress(AchievementCriteriaEntry const* criteri
         {
             WorldPacket data(SMSG_CRITERIA_DELETED, 4);
             data << uint32(criteria->ID);
-            m_player->SendDirectMessage(&data);
+            m_player->SendDirectMessage(data);
         }
 
         if (HasAchievement(achievement->ID))
@@ -2176,7 +2176,7 @@ void AchievementMgr::IncompletedAchievement(AchievementEntry const* achievement)
 
     WorldPacket data(SMSG_ACHIEVEMENT_DELETED, 4);
     data << uint32(achievement->ID);
-    m_player->SendDirectMessage(&data);
+    m_player->SendDirectMessage(data);
 
     if (!itr->second.changed)                               // complete state saved
         CharacterDatabase.PExecute("DELETE FROM character_achievement WHERE guid = %u AND achievement = %u",
@@ -2205,8 +2205,8 @@ void AchievementMgr::SendAllAchievementData()
 {
     // since we don't know the exact size of the packed GUIDs this is just an approximation
     WorldPacket data(SMSG_ALL_ACHIEVEMENT_DATA, 4 * 2 + m_completedAchievements.size() * 4 * 2 + m_completedAchievements.size() * 7 * 4);
-    BuildAllDataPacket(&data);
-    GetPlayer()->GetSession()->SendPacket(&data);
+    BuildAllDataPacket(data);
+    GetPlayer()->GetSession()->SendPacket(data);
 }
 
 void AchievementMgr::SendRespondInspectAchievements(Player* player)
@@ -2214,39 +2214,39 @@ void AchievementMgr::SendRespondInspectAchievements(Player* player)
     // since we don't know the exact size of the packed GUIDs this is just an approximation
     WorldPacket data(SMSG_RESPOND_INSPECT_ACHIEVEMENTS, 4 + 4 * 2 + m_completedAchievements.size() * 4 * 2 + m_completedAchievements.size() * 7 * 4);
     data << GetPlayer()->GetPackGUID();
-    BuildAllDataPacket(&data);
-    player->GetSession()->SendPacket(&data);
+    BuildAllDataPacket(data);
+    player->GetSession()->SendPacket(data);
 }
 
 /**
  * used by both SMSG_ALL_ACHIEVEMENT_DATA  and SMSG_RESPOND_INSPECT_ACHIEVEMENT
  */
-void AchievementMgr::BuildAllDataPacket(WorldPacket* data)
+void AchievementMgr::BuildAllDataPacket(WorldPacket& data)
 {
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
-        *data << uint32(iter->first);
-        *data << uint32(secsToTimeBitFields(iter->second.date));
+        data << uint32(iter->first);
+        data << uint32(secsToTimeBitFields(iter->second.date));
     }
-    *data << int32(-1);
+    data << int32(-1);
 
     time_t now = time(nullptr);
     for (CriteriaProgressMap::const_iterator iter = m_criteriaProgress.begin(); iter != m_criteriaProgress.end(); ++iter)
     {
-        *data << uint32(iter->first);
-        data->appendPackGUID(iter->second.counter);
-        *data << GetPlayer()->GetPackGUID();
-        *data << uint32(iter->second.timedCriteriaFailed ? 1 : 0);
-        *data << uint32(secsToTimeBitFields(now));
-        *data << uint32(now - iter->second.date);
-        *data << uint32(now - iter->second.date);
+        data << uint32(iter->first);
+        data.appendPackGUID(iter->second.counter);
+        data << GetPlayer()->GetPackGUID();
+        data << uint32(iter->second.timedCriteriaFailed ? 1 : 0);
+        data << uint32(secsToTimeBitFields(now));
+        data << uint32(now - iter->second.date);
+        data << uint32(now - iter->second.date);
     }
 
-    *data << int32(-1);
+    data << int32(-1);
 }
 
 //==========================================================
-AchievementCriteriaEntryList const& AchievementGlobalMgr::GetAchievementCriteriaByType(AchievementCriteriaTypes type)
+AchievementCriteriaEntryList const& AchievementGlobalMgr::GetAchievementCriteriaByType(AchievementCriteriaTypes type) const
 {
     return m_AchievementCriteriasByType[type];
 }

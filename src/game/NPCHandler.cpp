@@ -27,7 +27,6 @@
 #include "SpellMgr.h"
 #include "Player.h"
 #include "GossipDef.h"
-#include "UpdateMask.h"
 #include "ScriptMgr.h"
 #include "Creature.h"
 #include "Pet.h"
@@ -59,18 +58,14 @@ void WorldSession::HandleTabardVendorActivateOpcode(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     SendTabardVendorActivate(guid);
 }
 
-void WorldSession::SendTabardVendorActivate(ObjectGuid guid)
+void WorldSession::SendTabardVendorActivate(ObjectGuid guid) const
 {
     WorldPacket data(MSG_TABARDVENDOR_ACTIVATE, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleBankerActivateOpcode(WorldPacket& recv_data)
@@ -84,25 +79,21 @@ void WorldSession::HandleBankerActivateOpcode(WorldPacket& recv_data)
     if (!CheckBanker(guid))
         return;
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     SendShowBank(guid);
 }
 
-void WorldSession::SendShowBank(ObjectGuid guid)
+void WorldSession::SendShowBank(ObjectGuid guid) const
 {
     WorldPacket data(SMSG_SHOW_BANK, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
-void WorldSession::SendShowMailBox(ObjectGuid guid)
+void WorldSession::SendShowMailBox(ObjectGuid guid) const
 {
     WorldPacket data(SMSG_SHOW_MAILBOX, 8);
     data << ObjectGuid(guid);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleTrainerListOpcode(WorldPacket& recv_data)
@@ -114,7 +105,7 @@ void WorldSession::HandleTrainerListOpcode(WorldPacket& recv_data)
     SendTrainerList(guid);
 }
 
-void WorldSession::SendTrainerList(ObjectGuid guid)
+void WorldSession::SendTrainerList(ObjectGuid guid) const
 {
     std::string str = GetMangosString(LANG_NPC_TAINER_HELLO);
     SendTrainerList(guid, str);
@@ -141,7 +132,7 @@ static void SendTrainerSpellHelper(WorldPacket& data, TrainerSpell const* tSpell
     data << uint32(0);
 }
 
-void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
+void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle) const
 {
     DEBUG_LOG("WORLD: SendTrainerList");
 
@@ -151,10 +142,6 @@ void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
         DEBUG_LOG("WORLD: SendTrainerList - %s not found or you can't interact with him.", guid.GetString().c_str());
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     // trainer list loaded at check;
     if (!unit->IsTrainerOf(_player, true))
@@ -232,7 +219,7 @@ void WorldSession::SendTrainerList(ObjectGuid guid, const std::string& strTitle)
     data << strTitle;
 
     data.put<uint32>(count_pos, count);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
@@ -249,10 +236,6 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
         DEBUG_LOG("WORLD: HandleTrainerBuySpellOpcode - %s not found or you can't interact with him.", guid.GetString().c_str());
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     if (!unit->IsTrainerOf(_player, true))
         return;
@@ -298,19 +281,19 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recv_data)
     WorldPacket data(SMSG_PLAY_SPELL_IMPACT, 8 + 4);        // visual effect on player
     data << _player->GetObjectGuid();
     data << uint32(0x016A);                                 // index from SpellVisualKit.dbc
-    SendPacket(&data);
+    SendPacket(data);
 
     // learn explicitly or cast explicitly
     // TODO - Are these spells really cast correctly this way?
     if (trainer_spell->IsCastable())
-        _player->CastSpell(_player, trainer_spell->spell, true);
+        _player->CastSpell(_player, trainer_spell->spell, TRIGGERED_OLD_TRIGGERED);
     else
         _player->learnSpell(spellId, false);
 
     data.Initialize(SMSG_TRAINER_BUY_SUCCEEDED, 12);
     data << ObjectGuid(guid);
     data << uint32(spellId);                                // should be same as in packet from client
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleGossipHelloOpcode(WorldPacket& recv_data)
@@ -326,10 +309,6 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket& recv_data)
         DEBUG_LOG("WORLD: HandleGossipHelloOpcode - %s not found or you can't interact with him.", guid.GetString().c_str());
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     pCreature->StopMoving();
 
@@ -359,10 +338,6 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recv_data)
         recv_data >> code;
         DEBUG_LOG("Gossip code: %s", code.c_str());
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     uint32 sender = _player->PlayerTalkClass->GossipOptionSender(gossipListId);
     uint32 action = _player->PlayerTalkClass->GossipOptionAction(gossipListId);
@@ -433,14 +408,10 @@ void WorldSession::HandleSpiritHealerActivateOpcode(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     SendSpiritResurrect();
 }
 
-void WorldSession::SendSpiritResurrect()
+void WorldSession::SendSpiritResurrect() const
 {
     _player->ResurrectPlayer(0.5f, true);
 
@@ -494,26 +465,22 @@ void WorldSession::HandleBinderActivateOpcode(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     SendBindPoint(unit);
 }
 
-void WorldSession::SendBindPoint(Creature* npc)
+void WorldSession::SendBindPoint(Creature* npc) const
 {
     // prevent set homebind to instances in any case
     if (GetPlayer()->GetMap()->Instanceable())
         return;
 
     // send spell for bind 3286 bind magic
-    npc->CastSpell(_player, 3286, true);                    // Bind
+    npc->CastSpell(_player, 3286, TRIGGERED_OLD_TRIGGERED);                    // Bind
 
     WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, (8 + 4));
     data << npc->GetObjectGuid();
     data << uint32(3286);                                   // Bind
-    SendPacket(&data);
+    SendPacket(data);
 
     _player->PlayerTalkClass->CloseGossip();
 }
@@ -531,14 +498,10 @@ void WorldSession::HandleListStabledPetsOpcode(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     SendStablePet(npcGUID);
 }
 
-void WorldSession::SendStablePet(ObjectGuid guid)
+void WorldSession::SendStablePet(ObjectGuid guid) const
 {
     DEBUG_LOG("WORLD: Recv MSG_LIST_STABLED_PETS Send.");
 
@@ -553,6 +516,7 @@ void WorldSession::SendStablePet(ObjectGuid guid)
     data << uint8(GetPlayer()->m_stableSlots);
 
     uint8 num = 0;                                          // counter for place holder
+    PetSaveMode firstSlot = PET_SAVE_FIRST_STABLE_SLOT;     // have to be changed to PET_SAVE_AS_CURRENT if pet is not currently summoned
 
     // not let move dead pet in slot
     if (pet && pet->isAlive() && pet->getPetType() == HUNTER_PET)
@@ -564,10 +528,12 @@ void WorldSession::SendStablePet(ObjectGuid guid)
         data << uint8(1);                                   // 1 = current, 2/3 = in stable (any from 4,5,... create problems with proper show)
         ++num;
     }
+    else
+        firstSlot = PET_SAVE_AS_CURRENT;                    // have to send also unsummoned pet
 
-    //                                                     0      1   2      3      4
-    QueryResult* result = CharacterDatabase.PQuery("SELECT owner, id, entry, level, name FROM character_pet WHERE owner = '%u' AND slot >= '%u' AND slot <= '%u' ORDER BY slot",
-                          _player->GetGUIDLow(), PET_SAVE_FIRST_STABLE_SLOT, PET_SAVE_LAST_STABLE_SLOT);
+    //                                                     0      1     2   3      4      5
+    QueryResult* result = CharacterDatabase.PQuery("SELECT owner, slot, id, entry, level, name FROM character_pet WHERE owner = '%u' AND slot >= '%u' AND slot <= '%u' ORDER BY slot",
+                          _player->GetGUIDLow(), uint32(firstSlot), uint32(PET_SAVE_LAST_STABLE_SLOT));
 
     if (result)
     {
@@ -575,11 +541,11 @@ void WorldSession::SendStablePet(ObjectGuid guid)
         {
             Field* fields = result->Fetch();
 
-            data << uint32(fields[1].GetUInt32());          // petnumber
-            data << uint32(fields[2].GetUInt32());          // creature entry
-            data << uint32(fields[3].GetUInt32());          // level
-            data << fields[4].GetString();                  // name
-            data << uint8(2);                               // 1 = current, 2/3 = in stable (any from 4,5,... create problems with proper show)
+            data << uint32(fields[2].GetUInt32());          // petnumber
+            data << uint32(fields[3].GetUInt32());          // creature entry
+            data << uint32(fields[4].GetUInt32());          // level
+            data << fields[5].GetString();                  // name
+            data << uint8(fields[1].GetUInt32() + 1);       // slot
 
             ++num;
         }
@@ -589,17 +555,17 @@ void WorldSession::SendStablePet(ObjectGuid guid)
     }
 
     data.put<uint8>(wpos, num);                             // set real data to placeholder
-    SendPacket(&data);
+    SendPacket(data);
 }
 
-void WorldSession::SendStableResult(uint8 res)
+void WorldSession::SendStableResult(uint8 res) const
 {
     WorldPacket data(SMSG_STABLE_RESULT, 1);
     data << uint8(res);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
-bool WorldSession::CheckStableMaster(ObjectGuid guid)
+bool WorldSession::CheckStableMaster(ObjectGuid guid) const
 {
     // spell case or GM
     if (guid == GetPlayer()->GetObjectGuid())
@@ -643,17 +609,44 @@ void WorldSession::HandleStablePet(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     Pet* pet = _player->GetPet();
 
     // can't place in stable dead pet
-    if (!pet || !pet->isAlive() || pet->getPetType() != HUNTER_PET)
+    if (pet)
     {
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
+        bool stop = false;
+        if (!pet->isAlive())
+        {
+            _player->SendPetTameFailure(PETTAME_DEAD);
+            stop = true;
+        }
+
+        if (!stop && pet->getPetType() != HUNTER_PET)
+        {
+            _player->SendPetTameFailure(PETTAME_INVALIDCREATURE);
+            stop = true;
+        }
+
+        if (stop)
+        {
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
+    }
+    else
+    {
+        SpellCastResult loadResult = Pet::TryLoadFromDB(_player, 0, 0, true, HUNTER_PET);
+        if (loadResult != SPELL_CAST_OK)
+        {
+            if (loadResult == SPELL_FAILED_TARGETS_DEAD)
+                _player->SendPetTameFailure(PETTAME_DEAD);
+
+            if (loadResult == SPELL_FAILED_BAD_TARGETS)
+                _player->SendPetTameFailure(PETTAME_INVALIDCREATURE);
+
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
     }
 
     uint32 free_slot = 1;
@@ -682,8 +675,19 @@ void WorldSession::HandleStablePet(WorldPacket& recv_data)
 
     if (free_slot > 0 && free_slot <= GetPlayer()->m_stableSlots)
     {
-        pet->Unsummon(PetSaveMode(free_slot), _player);
+        if (pet)
+            pet->Unsummon(PetSaveMode(free_slot), _player);
+        else
+        {
+            // change pet slot directly in database
+            CharacterDatabase.BeginTransaction();
+            static SqlStatementID ChangePetSlot_ID;
+            SqlStatement ChangePetSlot = CharacterDatabase.CreateStatement(ChangePetSlot_ID, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ? ");
+            ChangePetSlot.PExecute(free_slot, _player->GetObjectGuid().GetCounter(), uint32(PET_SAVE_AS_CURRENT));
+            CharacterDatabase.CommitTransaction();
+        }
         SendStableResult(STABLE_SUCCESS_STABLE);
+        _player->SetTemporaryUnsummonedPetNumber(0);
     }
     else
         SendStableResult(STABLE_ERR_STABLE);
@@ -703,25 +707,29 @@ void WorldSession::HandleUnstablePet(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     uint32 creature_id = 0;
+    uint32 slot = 0;
 
+    QueryResult* result = CharacterDatabase.PQuery("SELECT entry, slot FROM character_pet WHERE owner = '%u' AND id = '%u' AND slot >='%u' AND slot <= '%u'",
+                          _player->GetGUIDLow(), petnumber, PET_SAVE_FIRST_STABLE_SLOT, PET_SAVE_LAST_STABLE_SLOT);
+    if (result)
     {
-        QueryResult* result = CharacterDatabase.PQuery("SELECT entry FROM character_pet WHERE owner = '%u' AND id = '%u' AND slot >='%u' AND slot <= '%u'",
-                              _player->GetGUIDLow(), petnumber, PET_SAVE_FIRST_STABLE_SLOT, PET_SAVE_LAST_STABLE_SLOT);
-        if (result)
-        {
-            Field* fields = result->Fetch();
-            creature_id = fields[0].GetUInt32();
-            delete result;
-        }
+        Field* fields = result->Fetch();
+        creature_id   = fields[0].GetUInt32();
+        slot          = fields[1].GetUInt32();
+        delete result;
     }
 
     if (!creature_id)
     {
+        sLog.outError("HandleUnstablePet> %s trying to unstable a pet with invalid creature id!", _player->GetGuidStr().c_str());
+        SendStableResult(STABLE_ERR_STABLE);
+        return;
+    }
+
+    if (slot == uint32(PET_SAVE_AS_CURRENT))
+    {
+        sLog.outError("HandleUnstablePet> %s trying to unstable current pet!", _player->GetGuidStr().c_str());
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
@@ -729,32 +737,80 @@ void WorldSession::HandleUnstablePet(WorldPacket& recv_data)
     CreatureInfo const* creatureInfo = ObjectMgr::GetCreatureTemplate(creature_id);
     if (!creatureInfo || !creatureInfo->isTameable(_player->CanTameExoticPets()))
     {
-        // if problem in exotic pet
-        if (creatureInfo && creatureInfo->isTameable(true))
-            SendStableResult(STABLE_ERR_EXOTIC);
-        else
-            SendStableResult(STABLE_ERR_STABLE);
-        return;
-    }
-
-    Pet* pet = _player->GetPet();
-    if (pet && pet->isAlive())
-    {
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
-    // delete dead pet
+    // found if a pet is actually summoned
+    Pet* pet = _player->GetPet();
     if (pet)
-        pet->Unsummon(PET_SAVE_AS_DELETED, _player);
+    {
+        bool stop = false;
+        if (!pet->isAlive())
+        {
+            _player->SendPetTameFailure(PETTAME_DEAD);
+            stop = true;
+        }
+
+        if (!stop && pet->getPetType() != HUNTER_PET)
+        {
+            _player->SendPetTameFailure(PETTAME_ANOTHERSUMMONACTIVE);
+            stop = true;
+        }
+
+        if (stop)
+        {
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
+
+        pet->Unsummon(PetSaveMode(slot), _player);
+    }
+    else
+    {
+        // try to find if pet is actually temporary unsummoned
+        SpellCastResult loadResult = Pet::TryLoadFromDB(_player, 0, 0, true, HUNTER_PET);
+        if (loadResult != SPELL_CAST_OK)
+        {
+            if (loadResult == SPELL_FAILED_TARGETS_DEAD)
+            {
+                _player->SendPetTameFailure(PETTAME_DEAD);
+
+                sLog.outError("UnStablePet> trying to unstable a dead pet. Should not be possible!");
+                return;
+            }
+
+            if (loadResult == SPELL_FAILED_BAD_TARGETS)
+            {
+                _player->SendPetTameFailure(PETTAME_ANOTHERSUMMONACTIVE);
+                SendStableResult(STABLE_ERR_STABLE);
+                return;
+            }
+        }
+        else
+        {
+            // change pet slot directly in database
+            CharacterDatabase.BeginTransaction();
+            static SqlStatementID ChangePetSlot_ID;
+            SqlStatement ChangePetSlot = CharacterDatabase.CreateStatement(ChangePetSlot_ID, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ? ");
+            ChangePetSlot.PExecute(slot, _player->GetObjectGuid().GetCounter(), uint32(PET_SAVE_AS_CURRENT));
+            CharacterDatabase.CommitTransaction();
+        }
+    }
 
     Pet* newpet = new Pet(HUNTER_PET);
     if (!newpet->LoadPetFromDB(_player, creature_id, petnumber))
     {
         delete newpet;
         newpet = nullptr;
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
+
+        // load failed but it may be normal if the pet is set as temporary unsummoned by any reason
+        if (!_player->GetTemporaryUnsummonedPetNumber())
+        {
+            // load really failed
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
     }
 
     SendStableResult(STABLE_SUCCESS_UNSTABLE);
@@ -772,10 +828,6 @@ void WorldSession::HandleBuyStableSlot(WorldPacket& recv_data)
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     if (GetPlayer()->m_stableSlots < MAX_PET_STABLES)
     {
@@ -812,16 +864,42 @@ void WorldSession::HandleStableSwapPet(WorldPacket& recv_data)
         return;
     }
 
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
-
     Pet* pet = _player->GetPet();
-
-    if (!pet || pet->getPetType() != HUNTER_PET)
+    if (pet)
     {
-        SendStableResult(STABLE_ERR_STABLE);
-        return;
+        bool stop = false;
+        if (!pet->isAlive())
+        {
+            _player->SendPetTameFailure(PETTAME_DEAD);
+            stop = true;
+        }
+
+        if (!stop && pet->getPetType() != HUNTER_PET)
+        {
+            _player->SendPetTameFailure(PETTAME_INVALIDCREATURE);
+            stop = true;
+        }
+
+        if (stop)
+        {
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
+    }
+    else
+    {
+        SpellCastResult loadResult = Pet::TryLoadFromDB(_player, 0, 0, true, HUNTER_PET);
+        if (loadResult != SPELL_CAST_OK)
+        {
+            if (loadResult == SPELL_FAILED_TARGETS_DEAD)
+                _player->SendPetTameFailure(PETTAME_DEAD);
+
+            if (loadResult == SPELL_FAILED_BAD_TARGETS)
+                _player->SendPetTameFailure(PETTAME_INVALIDCREATURE);
+
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
     }
 
     // find swapped pet slot in stable
@@ -848,26 +926,39 @@ void WorldSession::HandleStableSwapPet(WorldPacket& recv_data)
     CreatureInfo const* creatureInfo = ObjectMgr::GetCreatureTemplate(creature_id);
     if (!creatureInfo || !creatureInfo->isTameable(_player->CanTameExoticPets()))
     {
-        // if problem in exotic pet
-        if (creatureInfo && creatureInfo->isTameable(true))
-            SendStableResult(STABLE_ERR_EXOTIC);
-        else
-            SendStableResult(STABLE_ERR_STABLE);
+        SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
     // move alive pet to slot or delete dead pet
-    pet->Unsummon(pet->isAlive() ? PetSaveMode(slot) : PET_SAVE_AS_DELETED, _player);
+    if (pet)
+        pet->Unsummon(PetSaveMode(slot), _player);
+    else
+    {
+        // change pet slot directly in memory
+        CharacterDatabase.BeginTransaction();
+        static SqlStatementID ChangePetSlot_ID;
+        SqlStatement ChangePetSlot = CharacterDatabase.CreateStatement(ChangePetSlot_ID, "UPDATE character_pet SET slot = ? WHERE owner = ? AND slot = ? ");
+        ChangePetSlot.PExecute(slot, _player->GetObjectGuid().GetCounter(), uint32(PET_SAVE_AS_CURRENT));
+        CharacterDatabase.CommitTransaction();
+    }
 
     // summon unstabled pet
     Pet* newpet = new Pet;
     if (!newpet->LoadPetFromDB(_player, creature_id, pet_number))
     {
         delete newpet;
-        SendStableResult(STABLE_ERR_STABLE);
+
+        // load failed but it may be normal if the pet is set as temporary unsummoned by any reason
+        if (!_player->GetTemporaryUnsummonedPetNumber())
+        {
+            // load really failed
+            SendStableResult(STABLE_ERR_STABLE);
+            return;
+        }
     }
-    else
-        SendStableResult(STABLE_SUCCESS_UNSTABLE);
+
+    SendStableResult(STABLE_SUCCESS_UNSTABLE);
 }
 
 void WorldSession::HandleRepairItemOpcode(WorldPacket& recv_data)
@@ -886,10 +977,6 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket& recv_data)
         DEBUG_LOG("WORLD: HandleRepairItemOpcode - %s not found or you can't interact with him.", npcGuid.GetString().c_str());
         return;
     }
-
-    // remove fake death
-    if (GetPlayer()->hasUnitState(UNIT_STAT_DIED))
-        GetPlayer()->RemoveSpellsCausingAura(SPELL_AURA_FEIGN_DEATH);
 
     // reputation discount
     float discountMod = _player->GetReputationPriceDiscount(unit);

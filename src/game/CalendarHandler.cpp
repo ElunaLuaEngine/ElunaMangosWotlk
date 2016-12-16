@@ -122,7 +122,6 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recv_data*/)
     {
         uint32 map_diff_pair = itr->first;
         uint32 mapId = PAIR32_LOPART(map_diff_pair);
-        Difficulty difficulty = Difficulty(PAIR32_HIPART(map_diff_pair));
         MapDifficultyEntry const* mapDiff = itr->second;
 
         // skip mapDiff without global reset time
@@ -178,7 +177,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recv_data*/)
         data << holiday->TextureFilename;                   // m_textureFilename (holiday name)
     }*/
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 void WorldSession::HandleCalendarGetEvent(WorldPacket& recv_data)
@@ -451,7 +450,7 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recv_data)
             result = CharacterDatabase.PQuery("SELECT flags FROM character_social WHERE guid = %u AND friend = %u", inviteeGuid.GetCounter(), playerGuid.GetCounter());
             if (result)
             {
-                Field* fields = result->Fetch();
+                fields = result->Fetch();
                 if (fields[0].GetUInt8() & SOCIAL_FLAG_IGNORED)
                     isIgnored = true;
                 delete result;
@@ -584,7 +583,7 @@ void WorldSession::HandleCalendarEventRemoveInvite(WorldPacket& recv_data)
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "EventId [" UI64FMTD "], ownerInviteId [" UI64FMTD "], Invitee ([%s] id: [" UI64FMTD "])",
                      eventId, ownerInviteId, invitee.GetString().c_str(), inviteId);
 
-    if (CalendarEvent* event = sCalendarMgr.GetEventById(eventId))
+    if (sCalendarMgr.GetEventById(eventId))
         sCalendarMgr.RemoveInvite(eventId, inviteId, guid);
     else
         sCalendarMgr.SendCalendarCommandResult(_player, CALENDAR_ERROR_EVENT_INVALID);
@@ -715,7 +714,7 @@ void WorldSession::HandleCalendarComplain(WorldPacket& recv_data)
         WorldPacket data(SMSG_COMPLAIN_RESULT, 1 + 1);
         data << uint8(0);
         data << uint8(0); // show complain saved. We can send 0x0C to show windows with ok button
-        SendPacket(&data);
+        SendPacket(data);
     }
 }
 
@@ -730,14 +729,14 @@ void WorldSession::HandleCalendarGetNumPending(WorldPacket& /*recv_data*/)
 
     WorldPacket data(SMSG_CALENDAR_SEND_NUM_PENDING, 4);
     data << uint32(pending);
-    SendPacket(&data);
+    SendPacket(data);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Send function
 //////////////////////////////////////////////////////////////////////////
 
-void CalendarMgr::SendCalendarEventInviteAlert(CalendarInvite const* invite)
+void CalendarMgr::SendCalendarEventInviteAlert(CalendarInvite const* invite) const
 {
     DEBUG_LOG("WORLD: SMSG_CALENDAR_EVENT_INVITE_ALERT");
 
@@ -765,13 +764,13 @@ void CalendarMgr::SendCalendarEventInviteAlert(CalendarInvite const* invite)
     if (event->IsGuildEvent() || event->IsGuildAnnouncement())
     {
         if (Guild* guild = sGuildMgr.GetGuildById(event->GuildId))
-            guild->BroadcastPacket(&data);
+            guild->BroadcastPacket(data);
     }
     else if (Player* player = sObjectMgr.GetPlayer(invite->InviteeGuid))
-        player->SendDirectMessage(&data);
+        player->SendDirectMessage(data);
 }
 
-void CalendarMgr::SendCalendarEventInvite(CalendarInvite const* invite)
+void CalendarMgr::SendCalendarEventInvite(CalendarInvite const* invite) const
 {
     CalendarEvent const* event = invite->GetCalendarEvent();
 
@@ -806,13 +805,13 @@ void CalendarMgr::SendCalendarEventInvite(CalendarInvite const* invite)
     if (preInvite)
     {
         if (Player* sender = sObjectMgr.GetPlayer(invite->SenderGuid))
-            sender->SendDirectMessage(&data);
+            sender->SendDirectMessage(data);
     }
     else
         SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendCalendarCommandResult(Player* player, CalendarError err, char const* param /*= nullptr*/)
+void CalendarMgr::SendCalendarCommandResult(Player* player, CalendarError err, char const* param /*= nullptr*/) const
 {
     if (!player)
         return;
@@ -835,10 +834,10 @@ void CalendarMgr::SendCalendarCommandResult(Player* player, CalendarError err, c
 
     data << uint32(err);
     //data.hexlike();
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 }
 
-void CalendarMgr::SendCalendarEventRemovedAlert(CalendarEvent const* event)
+void CalendarMgr::SendCalendarEventRemovedAlert(CalendarEvent const* event) const
 {
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_EVENT_REMOVED_ALERT");
     WorldPacket data(SMSG_CALENDAR_EVENT_REMOVED_ALERT, 1 + 8 + 1);
@@ -849,7 +848,7 @@ void CalendarMgr::SendCalendarEventRemovedAlert(CalendarEvent const* event)
     SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendCalendarEvent(Player* player, CalendarEvent const* event, uint32 sendType)
+void CalendarMgr::SendCalendarEvent(Player* player, CalendarEvent const* event, uint32 sendType) const
 {
     if (!player || !event)
         return;
@@ -897,10 +896,10 @@ void CalendarMgr::SendCalendarEvent(Player* player, CalendarEvent const* event, 
                          (event->IsGuildEvent() && event->GuildId == inviteeGuildId) ? "true" : "false", invite->Text.c_str());
     }
     //data.hexlike();
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 }
 
-void CalendarMgr::SendCalendarEventInviteRemove(CalendarInvite const* invite, uint32 flags)
+void CalendarMgr::SendCalendarEventInviteRemove(CalendarInvite const* invite, uint32 flags) const
 {
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_EVENT_INVITE_REMOVED");
 
@@ -915,7 +914,7 @@ void CalendarMgr::SendCalendarEventInviteRemove(CalendarInvite const* invite, ui
     SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendCalendarEventInviteRemoveAlert(Player* player, CalendarEvent const* event, CalendarInviteStatus status)
+void CalendarMgr::SendCalendarEventInviteRemoveAlert(Player* player, CalendarEvent const* event, CalendarInviteStatus status) const
 {
     if (player)
     {
@@ -926,11 +925,11 @@ void CalendarMgr::SendCalendarEventInviteRemoveAlert(Player* player, CalendarEve
         data << uint32(event->Flags);
         data << uint8(status);
         //data.hexlike();
-        player->SendDirectMessage(&data);
+        player->SendDirectMessage(data);
     }
 }
 
-void CalendarMgr::SendCalendarEventStatus(CalendarInvite const* invite)
+void CalendarMgr::SendCalendarEventStatus(CalendarInvite const* invite) const
 {
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_EVENT_STATUS");
     WorldPacket data(SMSG_CALENDAR_EVENT_STATUS, 8 + 8 + 4 + 4 + 1 + 1 + 4);
@@ -947,17 +946,17 @@ void CalendarMgr::SendCalendarEventStatus(CalendarInvite const* invite)
     SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendCalendarClearPendingAction(Player* player)
+void CalendarMgr::SendCalendarClearPendingAction(Player* player) const
 {
     if (player)
     {
         DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_CLEAR_PENDING_ACTION TO [%s]", player->GetObjectGuid().GetString().c_str());
         WorldPacket data(SMSG_CALENDAR_CLEAR_PENDING_ACTION, 0);
-        player->SendDirectMessage(&data);
+        player->SendDirectMessage(data);
     }
 }
 
-void CalendarMgr::SendCalendarEventModeratorStatusAlert(CalendarInvite const* invite)
+void CalendarMgr::SendCalendarEventModeratorStatusAlert(CalendarInvite const* invite) const
 {
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_EVENT_MODERATOR_STATUS_ALERT");
     CalendarEvent const* event = invite->GetCalendarEvent();
@@ -970,7 +969,7 @@ void CalendarMgr::SendCalendarEventModeratorStatusAlert(CalendarInvite const* in
     SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendCalendarEventUpdateAlert(CalendarEvent const* event, time_t oldEventTime)
+void CalendarMgr::SendCalendarEventUpdateAlert(CalendarEvent const* event, time_t oldEventTime) const
 {
     DEBUG_FILTER_LOG(LOG_FILTER_CALENDAR, "SMSG_CALENDAR_EVENT_UPDATED_ALERT");
     WorldPacket data(SMSG_CALENDAR_EVENT_UPDATED_ALERT, 1 + 8 + 4 + 4 + 4 + 1 + 4 +
@@ -992,22 +991,22 @@ void CalendarMgr::SendCalendarEventUpdateAlert(CalendarEvent const* event, time_
     SendPacketToAllEventRelatives(data, event);
 }
 
-void CalendarMgr::SendPacketToAllEventRelatives(WorldPacket packet, CalendarEvent const* event)
+void CalendarMgr::SendPacketToAllEventRelatives(WorldPacket packet, CalendarEvent const* event) const
 {
     // Send packet to all guild members
     if (event->IsGuildEvent() || event->IsGuildAnnouncement())
         if (Guild* guild = sGuildMgr.GetGuildById(event->GuildId))
-            guild->BroadcastPacket(&packet);
+            guild->BroadcastPacket(packet);
 
     // Send packet to all invitees if event is non-guild, in other case only to non-guild invitees (packet was broadcasted for them)
     CalendarInviteMap const* cInvMap = event->GetInviteMap();
     for (CalendarInviteMap::const_iterator itr = cInvMap->begin(); itr != cInvMap->end(); ++itr)
         if (Player* player = sObjectMgr.GetPlayer(itr->second->InviteeGuid))
             if (!event->IsGuildEvent() || (event->IsGuildEvent() && player->GetGuildId() != event->GuildId))
-                player->SendDirectMessage(&packet);
+                player->SendDirectMessage(packet);
 }
 
-void CalendarMgr::SendCalendarRaidLockoutRemove(Player* player, DungeonPersistentState const* save)
+void CalendarMgr::SendCalendarRaidLockoutRemove(Player* player, DungeonPersistentState const* save) const
 {
     if (!save || !player)
         return;
@@ -1021,10 +1020,10 @@ void CalendarMgr::SendCalendarRaidLockoutRemove(Player* player, DungeonPersisten
     data << uint32(save->GetResetTime() - currTime);
     data << uint64(save->GetInstanceId());
     //data.hexlike();
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 }
 
-void CalendarMgr::SendCalendarRaidLockoutAdd(Player* player, DungeonPersistentState const* save)
+void CalendarMgr::SendCalendarRaidLockoutAdd(Player* player, DungeonPersistentState const* save) const
 {
     if (!save || !player)
         return;
@@ -1039,5 +1038,5 @@ void CalendarMgr::SendCalendarRaidLockoutAdd(Player* player, DungeonPersistentSt
     data << uint32(save->GetResetTime() - currTime);
     data << uint64(save->GetInstanceId());
     //data.hexlike();
-    player->SendDirectMessage(&data);
+    player->SendDirectMessage(data);
 }

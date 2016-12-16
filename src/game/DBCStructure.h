@@ -19,7 +19,6 @@
 #ifndef MANGOS_DBCSTRUCTURE_H
 #define MANGOS_DBCSTRUCTURE_H
 
-#include "Common.h"
 #include "DBCEnums.h"
 #include "Path.h"
 #include "Platform/Define.h"
@@ -1051,6 +1050,11 @@ struct GtOCTRegenHPEntry
     float    ratio;
 };
 
+struct GtNPCManaCostScalerEntry
+{
+    float    ratio;
+};
+
 // struct GtOCTRegenMPEntry
 //{
 //    float    ratio;
@@ -1717,7 +1721,7 @@ struct SpellEntry
         uint32    SpellVisual[2];                           // 131-132  m_spellVisualID
         uint32    SpellIconID;                              // 133      m_spellIconID
         uint32    activeIconID;                             // 134      m_activeIconID
-        // uint32    spellPriority;                         // 135      m_spellPriority not used
+        uint32    spellPriority;                            // 135      m_spellPriority not used
         char*     SpellName[16];                            // 136-151  m_name_lang
         // uint32    SpellNameFlag;                         // 152      m_name_flag not used
         char*     Rank[16];                                 // 153-168  m_nameSubtext_lang
@@ -1749,6 +1753,7 @@ struct SpellEntry
         // float   effectBonusCoefficient[3];               // 229-231  m_effectBonusCoefficient
         // uint32  spellDescriptionVariableID;              // 232      m_descriptionVariablesID
         uint32  SpellDifficultyId;                          // 233      m_difficulty (SpellDifficulty.dbc)
+        uint32  IsServerSide;
 
         // helpers
         int32 CalculateSimpleValue(SpellEffectIndex eff) const { return EffectBasePoints[eff] + int32(1); }
@@ -1777,14 +1782,14 @@ struct SpellEntry
             return SpellFamily(SpellFamilyName) == family && IsFitToFamilyMask(mask);
         }
 
-        inline bool HasAttribute(SpellAttributes attribute) const { return Attributes & attribute; }
-        inline bool HasAttribute(SpellAttributesEx attribute) const { return AttributesEx & attribute; }
-        inline bool HasAttribute(SpellAttributesEx2 attribute) const { return AttributesEx2 & attribute; }
-        inline bool HasAttribute(SpellAttributesEx3 attribute) const { return AttributesEx3 & attribute; }
-        inline bool HasAttribute(SpellAttributesEx4 attribute) const { return AttributesEx4 & attribute; }
-        inline bool HasAttribute(SpellAttributesEx5 attribute) const { return AttributesEx5 & attribute; }
-        inline bool HasAttribute(SpellAttributesEx6 attribute) const { return AttributesEx6 & attribute; }
-        inline bool HasAttribute(SpellAttributesEx7 attribute) const { return AttributesEx7 & attribute; }
+        inline bool HasAttribute(SpellAttributes attribute) const { return !!(Attributes & attribute); }
+        inline bool HasAttribute(SpellAttributesEx attribute) const { return !!(AttributesEx & attribute); }
+        inline bool HasAttribute(SpellAttributesEx2 attribute) const { return !!(AttributesEx2 & attribute); }
+        inline bool HasAttribute(SpellAttributesEx3 attribute) const { return !!(AttributesEx3 & attribute); }
+        inline bool HasAttribute(SpellAttributesEx4 attribute) const { return !!(AttributesEx4 & attribute); }
+        inline bool HasAttribute(SpellAttributesEx5 attribute) const { return !!(AttributesEx5 & attribute); }
+        inline bool HasAttribute(SpellAttributesEx6 attribute) const { return !!(AttributesEx6 & attribute); }
+        inline bool HasAttribute(SpellAttributesEx7 attribute) const { return !!(AttributesEx7 & attribute); }
 
     private:
         // prevent creating custom entries (copy data from original in fact)

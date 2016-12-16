@@ -213,10 +213,12 @@ inline ByteBuffer& operator>> (ByteBuffer& buf, SpellCastTargetsReader const& ta
 
 enum SpellState
 {
-    SPELL_STATE_PREPARING = 0,                              // cast time delay period, non channeled spell
-    SPELL_STATE_CASTING   = 1,                              // channeled time period spell casting state
-    SPELL_STATE_FINISHED  = 2,                              // cast finished to success or fail
-    SPELL_STATE_DELAYED   = 3                               // spell casted but need time to hit target(s)
+    SPELL_STATE_CREATED   = 0,                              // just created
+    SPELL_STATE_STARTING  = 1,                              // doing initial check
+    SPELL_STATE_PREPARING = 2,                              // cast time delay period, non channeled spell
+    SPELL_STATE_CASTING   = 3,                              // channeled time period spell casting state
+    SPELL_STATE_FINISHED  = 4,                              // cast finished to success or fail
+    SPELL_STATE_DELAYED   = 5                               // spell casted but need time to hit target(s)
 };
 
 enum SpellTargets
@@ -364,10 +366,10 @@ class Spell
         void EffectGravityPull(SpellEffectIndex eff_idx);
         void EffectCreateTamedPet(SpellEffectIndex eff_ifx);
 
-        Spell(Unit* caster, SpellEntry const* info, bool triggered, ObjectGuid originalCasterGUID = ObjectGuid(), SpellEntry const* triggeredBy = nullptr);
+        Spell(Unit* caster, SpellEntry const* info, uint32 triggeredFlags, ObjectGuid originalCasterGUID = ObjectGuid(), SpellEntry const* triggeredBy = nullptr);
         ~Spell();
 
-        void prepare(SpellCastTargets const* targets, Aura* triggeredByAura = nullptr);
+        void SpellStart(SpellCastTargets const* targets, Aura* triggeredByAura = nullptr);
 
         void cancel();
 
@@ -375,7 +377,7 @@ class Spell
         void cast(bool skipCheck = false);
         void finish(bool ok = true);
         void TakePower();
-        void TakeAmmo();
+        void TakeAmmo() const;
         void TakeReagents();
         void TakeCastItem();
 
@@ -390,12 +392,12 @@ class Spell
         void _handle_finish_phase();
 
         SpellCastResult CheckItems();
-        SpellCastResult CheckRange(bool strict);
+        SpellCastResult CheckRange(bool strict) const;
         SpellCastResult CheckPower();
         SpellCastResult CheckOrTakeRunePower(bool take);
         SpellCastResult CheckCasterAuras() const;
 
-        int32 CalculateDamage(SpellEffectIndex i, Unit* target) { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_currentBasePoints[i]); }
+        int32 CalculateDamage(SpellEffectIndex i, Unit* target) const { return m_caster->CalculateSpellDamage(target, m_spellInfo, i, &m_currentBasePoints[i]); }
         static uint32 CalculatePowerCost(SpellEntry const* spellInfo, Unit* caster, Spell const* spell = nullptr, Item* castItem = nullptr);
 
         bool HaveTargetsForEffect(SpellEffectIndex effect) const;
@@ -406,24 +408,24 @@ class Spell
 
         void DoCreateItem(SpellEffectIndex eff_idx, uint32 itemtype);
 
-        void WriteSpellGoTargets(WorldPacket* data);
-        void WriteAmmoToPacket(WorldPacket* data);
+        void WriteSpellGoTargets(WorldPacket& data);
+        void WriteAmmoToPacket(WorldPacket& data) const;
 
         template<typename T> WorldObject* FindCorpseUsing();
 
-        bool CheckTarget(Unit* target, SpellEffectIndex eff);
+        bool CheckTarget(Unit* target, SpellEffectIndex eff) const;
         bool CanAutoCast(Unit* target);
 
         static void MANGOS_DLL_SPEC SendCastResult(Player* caster, SpellEntry const* spellInfo, uint8 cast_count, SpellCastResult result, bool isPetCastResult = false);
-        void SendCastResult(SpellCastResult result);
-        void SendSpellStart();
+        void SendCastResult(SpellCastResult result) const;
+        void SendSpellStart() const;
         void SendSpellGo();
         void SendSpellCooldown();
-        void SendLogExecute();
-        void SendInterrupted(uint8 result);
-        void SendChannelUpdate(uint32 time);
+        void SendLogExecute() const;
+        void SendInterrupted(uint8 result) const;
+        void SendChannelUpdate(uint32 time) const;
         void SendChannelStart(uint32 duration);
-        void SendResurrectRequest(Player* target);
+        void SendResurrectRequest(Player* target) const;
 
         void HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, SpellEffectIndex i, float DamageMultiplier = 1.0);
         void HandleThreatSpells();
@@ -432,13 +434,19 @@ class Spell
         SpellEntry const* m_spellInfo;
         SpellEntry const* m_triggeredBySpellInfo;
         int32 m_currentBasePoints[MAX_EFFECT_INDEX];        // cache SpellEntry::CalculateSimpleValue and use for set custom base points
+
+        ObjectGuid m_CastItemGuid;
         Item* m_CastItem;
         uint8 m_cast_count;
         uint32 m_glyphIndex;
         SpellCastTargets m_targets;
+        
+        // Trigger flag system
+        bool m_ignoreHitResult;
+        bool m_ignoreUnselectableTarget;
 
         int32 GetCastTime() const { return m_casttime; }
-        uint32 GetCastedTime() { return m_timer; }
+        uint32 GetCastedTime() const { return m_timer; }
         bool IsAutoRepeat() const { return m_autoRepeat; }
         void SetAutoRepeat(bool rep) { m_autoRepeat = rep; }
         void ReSetTimer() { m_timer = m_casttime > 0 ? m_casttime : 0; }
@@ -464,7 +472,7 @@ class Spell
         bool IsNeedSendToClient() const;                    // use for hide spell cast for client in case when cast not have client side affect (animation or log entries)
         bool IsTriggeredSpellWithRedundentCastTime() const; // use for ignore some spell data for triggered spells like cast time, some triggered spells have redundent copy data from main spell for client use purpose
 
-        CurrentSpellTypes GetCurrentContainer();
+        CurrentSpellTypes GetCurrentContainer() const;
 
         // caster types:
         // formal spell caster, in game source of spell affects cast
@@ -497,7 +505,7 @@ class Spell
         typedef std::list<Unit*> UnitList;
 
     protected:
-        bool HasGlobalCooldown();
+        bool HasGlobalCooldown() const;
         void TriggerGlobalCooldown();
         void CancelGlobalCooldown();
 
@@ -505,13 +513,14 @@ class Spell
         bool IgnoreItemRequirements() const;                // some item use spells have unexpected reagent data
         void UpdateOriginalCasterPointer();
 
+        SpellCastResult PreCastCheck(Aura* triggeredByAura = nullptr);
+        void Prepare();
+
         Unit* m_caster;
 
         ObjectGuid m_originalCasterGUID;                    // real source of cast (aura caster/etc), used for spell targets selection
         // e.g. damage around area spell trigered by victim aura and da,age emeies of aura caster
         Unit* m_originalCaster;                             // cached pointer for m_originalCaster, updated at Spell::UpdatePointers()
-
-        Spell** m_selfContainer;                            // pointer to our spell container (if applicable)
 
         // Spell data
         SpellSchoolMask m_spellSchoolMask;                  // Spell school (can be overwrite for some spells (wand shoot for example)
@@ -581,7 +590,7 @@ class Spell
         void SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList& targetUnitMap);
 
         void FillAreaTargets(UnitList& targetUnitMap, float radius, SpellNotifyPushType pushType, SpellTargets spellTargets, WorldObject* originalCaster = nullptr);
-        void FillRaidOrPartyTargets(UnitList& targetUnitMap, Unit* member, Unit* center, float radius, bool raid, bool withPets, bool withcaster);
+        void FillRaidOrPartyTargets(UnitList& targetUnitMap, Unit* member, Unit* center, float radius, bool raid, bool withPets, bool withcaster) const;
         void FillRaidOrPartyManaPriorityTargets(UnitList& targetUnitMap, Unit* member, Unit* center, float radius, uint32 count, bool raid, bool withPets, bool withcaster);
         void FillRaidOrPartyHealthPriorityTargets(UnitList& targetUnitMap, Unit* member, Unit* center, float radius, uint32 count, bool raid, bool withPets, bool withcaster);
 

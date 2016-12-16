@@ -19,14 +19,10 @@
 # disable warnings for dependencies
 add_compile_options(-w)
 
-if(NOT (TBB_USE_EXTERNAL OR USE_STD_MALLOC))
-  add_subdirectory(tbb)
-endif()
-
-if(NOT ACE_USE_EXTERNAL)
-  add_subdirectory(ACE_wrappers)
-endif()
-
 add_subdirectory(lualib)
 add_subdirectory(recastnavigation)
 add_subdirectory(src)
+add_subdirectory(zlib)
+if (BUILD_VMAP_EXTRACTOR)
+  add_subdirectory(libmpq)
+endif()

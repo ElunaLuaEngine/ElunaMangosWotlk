@@ -19,7 +19,6 @@
 #ifndef MANGOS_SQLSTORAGES_H
 #define MANGOS_SQLSTORAGES_H
 
-#include "Common.h"
 #include "Database/SQLStorage.h"
 
 extern SQLStorage sCreatureStorage;
@@ -32,13 +31,15 @@ extern SQLStorage sItemStorage;
 extern SQLStorage sInstanceTemplate;
 extern SQLStorage sWorldTemplate;
 extern SQLStorage sConditionStorage;
+extern SQLStorage sSpellTemplate;
 
-extern SQLHashStorage sSpellTemplate;
 extern SQLHashStorage sGOStorage;
 extern SQLHashStorage sGameObjectDataAddonStorage;
 extern SQLHashStorage sCreatureTemplateSpellsStorage;
 
 extern SQLMultiStorage sVehicleAccessoryStorage;
 extern SQLMultiStorage sSpellScriptTargetStorage;
+
+MANGOS_DLL_SPEC SQLStorage                 const* GetSpellStore();
 
 #endif

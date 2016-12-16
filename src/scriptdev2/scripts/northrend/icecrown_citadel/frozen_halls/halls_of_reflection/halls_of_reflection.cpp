@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: halls_of_reflection.cpp
-SD%Complete: 30
-SDComment: Support for the first encounters only
+SD%Complete: 90
+SDComment: Scripts for the first encounter and the mini-boss. Quests 24480 and 24561.
 SDCategory: Halls of Reflection
 EndScriptData */
 
@@ -286,9 +286,9 @@ bool AreaTrigger_at_frostworn_general(Player* pPlayer, AreaTriggerEntry const* p
             // ToDo: research what is the difference between the two entries
             if (Creature* pReflection = pPlayerTarget->SummonCreature(urand(0, 1) ? NPC_SPIRITUAL_REFLECTION_1 : NPC_SPIRITUAL_REFLECTION_2, pSpawnCreature->GetPositionX(), pSpawnCreature->GetPositionY(), pSpawnCreature->GetPositionZ(), pSpawnCreature->GetOrientation(), TEMPSUMMON_DEAD_DESPAWN, 0))
             {
-                pPlayerTarget->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_CLONE_NAME, true);
-                pPlayerTarget->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_CLONE, true);
-                pReflection->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_GHOST, true);
+                pPlayerTarget->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_CLONE_NAME, TRIGGERED_OLD_TRIGGERED);
+                pPlayerTarget->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_CLONE, TRIGGERED_OLD_TRIGGERED);
+                pReflection->CastSpell(pReflection, SPELL_HALLS_OF_REFLECTION_GHOST, TRIGGERED_OLD_TRIGGERED);
             }
 
             lDugeonTrapsGuids.remove(*iter);
@@ -338,13 +338,52 @@ bool EffectDummyCreature_spell_summon_reflections(Unit* /*pCaster*/, uint32 uiSp
 
                     if (Player* pSummoner = pCreature->GetMap()->GetPlayer(pTemporary->GetSummonerGuid()))
                     {
+                        pCreature->SetLevitate(false);
                         pCreature->AI()->AttackStart(pSummoner);
                         pCreature->RemoveAurasDueToSpell(SPELL_FROZEN_POSITION);
-                        pCreature->CastSpell(pSummoner, SPELL_JUMPT_TO_TARGET, true);
+                        pCreature->CastSpell(pSummoner, SPELL_JUMPT_TO_TARGET, TRIGGERED_OLD_TRIGGERED);
                     }
                 }
             }
         }
+    }
+
+    return true;
+};
+
+/*######
+## at_queldelar_start
+######*/
+
+enum
+{
+    SPELL_QUELDELARS_WILL           = 70698,
+};
+
+bool AreaTrigger_at_queldelar_start(Player* pPlayer, AreaTriggerEntry const* pAt)
+{
+    if (pAt->id == AREATRIGGER_QUELDELAR_START)
+    {
+        if (pPlayer->isGameMaster() || !pPlayer->isAlive())
+            return false;
+
+        if (!pPlayer->HasAura(SPELL_QUELDELAR_COMPULSION))
+            return false;
+
+        instance_halls_of_reflection* pInstance = (instance_halls_of_reflection*)pPlayer->GetInstanceData();
+        if (!pInstance)
+            return false;
+
+        if (pInstance->GetData(TYPE_QUEL_DELAR) != SPECIAL)
+            return false;
+
+        // start event
+        if (Creature* pUther = pInstance->GetSingleCreatureFromStorage(NPC_UTHER))
+            pUther->GetMotionMaster()->MoveWaypoint();
+
+        pPlayer->CastSpell(pPlayer, SPELL_QUELDELARS_WILL, TRIGGERED_OLD_TRIGGERED);
+
+        pInstance->SetData(TYPE_QUEL_DELAR, IN_PROGRESS);
     }
 
     return true;
@@ -377,5 +416,10 @@ void AddSC_halls_of_reflection()
     pNewScript = new Script;
     pNewScript->Name = "npc_spell_summon_reflections";
     pNewScript->pEffectDummyNPC = &EffectDummyCreature_spell_summon_reflections;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "at_queldelar_start";
+    pNewScript->pAreaTrigger = &AreaTrigger_at_queldelar_start;
     pNewScript->RegisterSelf();
 }

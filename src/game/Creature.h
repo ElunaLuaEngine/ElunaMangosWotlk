@@ -21,11 +21,8 @@
 
 #include "Common.h"
 #include "Unit.h"
-#include "UpdateMask.h"
-#include "ItemPrototype.h"
 #include "SharedDefines.h"
 #include "DBCEnums.h"
-#include "Database/DatabaseEnv.h"
 #include "Cell.h"
 
 #include <list>
@@ -42,23 +39,24 @@ struct GameEventCreatureData;
 
 enum CreatureFlagsExtra
 {
-    CREATURE_FLAG_EXTRA_INSTANCE_BIND          = 0x00000001,       // creature kill bind instance with killer and killer's group
-    CREATURE_FLAG_EXTRA_CIVILIAN               = 0x00000002,       // not aggro (ignore faction/reputation hostility)
-    CREATURE_FLAG_EXTRA_NO_PARRY               = 0x00000004,       // creature can't parry
-    CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN        = 0x00000008,       // creature can't counter-attack at parry
-    CREATURE_FLAG_EXTRA_NO_BLOCK               = 0x00000010,       // creature can't block
-    CREATURE_FLAG_EXTRA_NO_CRUSH               = 0x00000020,       // creature can't do crush attacks
-    CREATURE_FLAG_EXTRA_NO_XP_AT_KILL          = 0x00000040,       // creature kill not provide XP
-    CREATURE_FLAG_EXTRA_INVISIBLE              = 0x00000080,       // creature is always invisible for player (mostly trigger creatures)
-    CREATURE_FLAG_EXTRA_NOT_TAUNTABLE          = 0x00000100,       // creature is immune to taunt auras and effect attack me
-    CREATURE_FLAG_EXTRA_AGGRO_ZONE             = 0x00000200,       // creature sets itself in combat with zone on aggro
-    CREATURE_FLAG_EXTRA_GUARD                  = 0x00000400,       // creature is a guard
-    CREATURE_FLAG_EXTRA_NO_CALL_ASSIST         = 0x00000800,       // creature shouldn't call for assistance on aggro
-    CREATURE_FLAG_EXTRA_ACTIVE                 = 0x00001000,       // creature is active object. Grid of this creature will be loaded and creature set as active
-    CREATURE_FLAG_EXTRA_MMAP_FORCE_ENABLE      = 0x00002000,       // creature is forced to use MMaps
-    CREATURE_FLAG_EXTRA_MMAP_FORCE_DISABLE     = 0x00004000,       // creature is forced to NOT use MMaps
-    CREATURE_FLAG_EXTRA_WALK_IN_WATER          = 0x00008000,       // creature is forced to walk in water even it can swim
-    CREATURE_FLAG_EXTRA_HAVE_NO_SWIM_ANIMATION = 0x00010000,       // we have to not set "swim" animation or creature will have "no animation"
+    CREATURE_EXTRA_FLAG_INSTANCE_BIND          = 0x00000001,       // creature kill bind instance with killer and killer's group
+    CREATURE_EXTRA_FLAG_CIVILIAN               = 0x00000002,       // not aggro (ignore faction/reputation hostility)
+    CREATURE_EXTRA_FLAG_NO_PARRY               = 0x00000004,       // creature can't parry
+    CREATURE_EXTRA_FLAG_NO_PARRY_HASTEN        = 0x00000008,       // creature can't counter-attack at parry
+    CREATURE_EXTRA_FLAG_NO_BLOCK               = 0x00000010,       // creature can't block
+    CREATURE_EXTRA_FLAG_NO_CRUSH               = 0x00000020,       // creature can't do crush attacks
+    CREATURE_EXTRA_FLAG_NO_XP_AT_KILL          = 0x00000040,       // creature kill not provide XP
+    CREATURE_EXTRA_FLAG_INVISIBLE              = 0x00000080,       // creature is always invisible for player (mostly trigger creatures)
+    CREATURE_EXTRA_FLAG_NOT_TAUNTABLE          = 0x00000100,       // creature is immune to taunt auras and effect attack me
+    CREATURE_EXTRA_FLAG_AGGRO_ZONE             = 0x00000200,       // creature sets itself in combat with zone on aggro
+    CREATURE_EXTRA_FLAG_GUARD                  = 0x00000400,       // creature is a guard
+    CREATURE_EXTRA_FLAG_NO_CALL_ASSIST         = 0x00000800,       // creature shouldn't call for assistance on aggro
+    CREATURE_EXTRA_FLAG_ACTIVE                 = 0x00001000,       // creature is active object. Grid of this creature will be loaded and creature set as active
+    CREATURE_EXTRA_FLAG_MMAP_FORCE_ENABLE      = 0x00002000,       // creature is forced to use MMaps
+    CREATURE_EXTRA_FLAG_MMAP_FORCE_DISABLE     = 0x00004000,       // creature is forced to NOT use MMaps
+    CREATURE_EXTRA_FLAG_WALK_IN_WATER          = 0x00008000,       // creature is forced to walk in water even it can swim
+    CREATURE_EXTRA_FLAG_HAVE_NO_SWIM_ANIMATION = 0x00010000,       // we have to not set "swim" animation or creature will have "no animation"
+    CREATURE_EXTRA_FLAG_NO_MELEE               = 0x00020000,       // creature can't melee
 };
 
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
@@ -70,6 +68,7 @@ enum CreatureFlagsExtra
 
 #define MAX_KILL_CREDIT 2
 #define MAX_CREATURE_MODEL 4
+#define USE_DEFAULT_DATABASE_LEVEL  0                   // just used to show we don't want to force the new creature level and use the level stored in db
 
 // from `creature_template` table
 struct CreatureInfo
@@ -128,6 +127,7 @@ struct CreatureInfo
     uint32  KillCredit[MAX_KILL_CREDIT];
     uint32  QuestItems[6];
     uint32  MechanicImmuneMask;
+    uint32  SchoolImmuneMask;
     int32   ResistanceHoly;
     int32   ResistanceFire;
     int32   ResistanceNature;
@@ -171,7 +171,7 @@ struct CreatureInfo
 
     bool IsExotic() const
     {
-        return (CreatureTypeFlags & CREATURE_TYPEFLAGS_EXOTIC);
+        return !!(CreatureTypeFlags & CREATURE_TYPEFLAGS_EXOTIC);
     }
 
     bool isTameable(bool exotic) const
@@ -319,6 +319,8 @@ enum AttackingTarget
     ATTACKING_TARGET_RANDOM = 0,                            // Just selects a random target
     ATTACKING_TARGET_TOPAGGRO,                              // Selects targes from top aggro to bottom
     ATTACKING_TARGET_BOTTOMAGGRO,                           // Selects targets from bottom aggro to top
+    ATTACKING_TARGET_NEAREST_BY,                            // Selects the nearest by target
+    ATTACKING_TARGET_FARTHEST_AWAY                          // Selects the farthest away target
 };
 
 enum SelectFlags
@@ -490,8 +492,6 @@ enum TemporaryFactionFlags                                  // Used at real fact
 
 class MANGOS_DLL_SPEC Creature : public Unit
 {
-        CreatureAI* i_AI;
-
     public:
 
         explicit Creature(CreatureSubtype subtype = CREATURE_SUBTYPE_GENERIC);
@@ -499,10 +499,13 @@ class MANGOS_DLL_SPEC Creature : public Unit
 
         void AddToWorld() override;
         void RemoveFromWorld() override;
+        virtual void CleanupsBeforeDelete() override;
 
         bool Create(uint32 guidlow, CreatureCreatePos& cPos, CreatureInfo const* cinfo, Team team = TEAM_NONE, const CreatureData* data = nullptr, GameEventCreatureData const* eventData = nullptr);
         bool LoadCreatureAddon(bool reload);
-        void SelectLevel(const CreatureInfo* cinfo, float percentHealth = 100.0f);
+
+        // SelectLevel set creature bases stats for given level or for default levels stored in db
+        void SelectLevel(uint32 forcedLevel = USE_DEFAULT_DATABASE_LEVEL);
         void LoadEquipment(uint32 equip_entry, bool force = false);
 
         bool HasStaticDBSpawnData() const;                  // listed in `creature` table and have fixed in DB guid
@@ -524,11 +527,11 @@ class MANGOS_DLL_SPEC Creature : public Unit
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         uint32 GetCorpseDelay() const { return m_corpseDelay; }
         bool IsRacialLeader() const { return GetCreatureInfo()->RacialLeader; }
-        bool IsCivilian() const { return GetCreatureInfo()->ExtraFlags & CREATURE_FLAG_EXTRA_CIVILIAN; }
-        bool IsGuard() const { return GetCreatureInfo()->ExtraFlags & CREATURE_FLAG_EXTRA_GUARD; }
+        bool IsCivilian() const { return !!(GetCreatureInfo()->ExtraFlags & CREATURE_EXTRA_FLAG_CIVILIAN); }
+        bool IsGuard() const { return !!(GetCreatureInfo()->ExtraFlags & CREATURE_EXTRA_FLAG_GUARD); }
 
-        bool CanWalk() const { return GetCreatureInfo()->InhabitType & INHABIT_GROUND; }
-        bool CanSwim() const { return GetCreatureInfo()->InhabitType & INHABIT_WATER; }
+        bool CanWalk() const { return !!(GetCreatureInfo()->InhabitType & INHABIT_GROUND); }
+        bool CanSwim() const { return !!(GetCreatureInfo()->InhabitType & INHABIT_WATER); }
         bool IsSwimming() const { return (m_movementInfo.HasMovementFlag((MovementFlags)(MOVEFLAG_SWIMMING))); }
         bool CanFly() const { return (GetCreatureInfo()->InhabitType & INHABIT_AIR) || (GetByteValue(UNIT_FIELD_BYTES_1, 3) & UNIT_BYTE1_FLAG_FLY_ANIM) || m_movementInfo.HasMovementFlag((MovementFlags)(MOVEFLAG_LEVITATING | MOVEFLAG_CAN_FLY)); }
         bool IsFlying() const { return (m_movementInfo.HasMovementFlag((MovementFlags)(MOVEFLAG_FLYING | MOVEFLAG_LEVITATING))); }
@@ -540,6 +543,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         void FillGuidsListFromThreatList(GuidVector& guids, uint32 maxamount = 0);
 
         bool IsImmuneToSpell(SpellEntry const* spellInfo, bool castOnSelf) override;
+        bool IsImmuneToDamage(SpellSchoolMask meleeSchoolMask) override;
         bool IsImmuneToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex index, bool castOnSelf) const override;
 
         bool IsElite() const
@@ -567,7 +571,8 @@ class MANGOS_DLL_SPEC Creature : public Unit
 
         bool AIM_Initialize();
 
-        CreatureAI* AI() { return i_AI; }
+        virtual CreatureAI* AI() override { if (m_charmInfo && m_charmInfo->GetAI()) return m_charmInfo->GetAI(); else return m_ai; }
+        virtual CombatData* GetCombatData() override { if (m_charmInfo && m_charmInfo->GetCombatData()) return m_charmInfo->GetCombatData(); else return m_combatData; }
 
         void SetWalk(bool enable, bool asDefault = true);
         void SetLevitate(bool enable) override;
@@ -635,7 +640,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         void SetDeathState(DeathState s) override;          // overwrite virtual Unit::SetDeathState
 
         bool LoadFromDB(uint32 guid, Map* map);
-        void SaveToDB();
+        virtual void SaveToDB();
         // overwrited in Pet
         virtual void SaveToDB(uint32 mapid, uint8 spawnMask, uint32 phaseMask);
         virtual void DeleteFromDB();                        // overwrited in Pet
@@ -651,7 +656,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         Group* GetGroupLootRecipient() const;
         bool isTappedBy(Player const* player) const; 
         bool HasLootRecipient() const { return m_lootGroupRecipientId || m_lootRecipientGuid; }
-        bool IsGroupLootRecipient() const { return m_lootGroupRecipientId; }
+        bool IsGroupLootRecipient() const { return!! m_lootGroupRecipientId; }
         void SetLootRecipient(Unit* unit);
         Player* GetOriginalLootRecipient() const;           // ignore group changes/etc, not for looting
 
@@ -662,8 +667,6 @@ class MANGOS_DLL_SPEC Creature : public Unit
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
 
-        float GetAttackDistance(Unit const* pl) const;
-
         void SendAIReaction(AiReaction reactionType);
 
         void DoFleeToGetAssistance();
@@ -671,9 +674,9 @@ class MANGOS_DLL_SPEC Creature : public Unit
         void CallAssistance();
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         void SetNoSearchAssistance(bool val) { m_AlreadySearchedAssistance = val; }
-        bool HasSearchedAssistance() { return m_AlreadySearchedAssistance; }
+        bool HasSearchedAssistance() const { return m_AlreadySearchedAssistance; }
         bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction = true) const;
-        bool CanInitiateAttack();
+        bool CanInitiateAttack() const;
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
@@ -684,7 +687,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
 
         bool IsVisibleInGridForPlayer(Player* pl) const override;
 
-        void RemoveCorpse();
+        void RemoveCorpse(bool inPlace = false);
         bool IsDeadByDefault() const { return m_isDeadByDefault; };
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
@@ -705,7 +708,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         static void AddToRemoveListInMaps(uint32 db_guid, CreatureData const* data);
         static void SpawnInMaps(uint32 db_guid, CreatureData const* data);
 
-        void SendZoneUnderAttackMessage(Player* attacker);
+        void SendZoneUnderAttackMessage(Player* attacker) const;
 
         void SetInCombatWithZone();
 
@@ -716,8 +719,8 @@ class MANGOS_DLL_SPEC Creature : public Unit
         bool HasInvolvedQuest(uint32 quest_id)  const override;
 
         GridReference<Creature>& GetGridRef() { return m_gridRef; }
-        bool IsRegeneratingHealth() { return GetCreatureInfo()->RegenerateStats & REGEN_FLAG_HEALTH; }
-        bool IsRegeneratingPower() { return GetCreatureInfo()->RegenerateStats & REGEN_FLAG_POWER; }
+        bool IsRegeneratingHealth() const { return !!(GetCreatureInfo()->RegenerateStats & REGEN_FLAG_HEALTH); }
+        bool IsRegeneratingPower() const { return !!(GetCreatureInfo()->RegenerateStats & REGEN_FLAG_POWER); }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
         virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
         {
@@ -728,7 +731,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         }
 
         void SetCombatStartPosition(float x, float y, float z) { m_combatStartX = x; m_combatStartY = y; m_combatStartZ = z; }
-        void GetCombatStartPosition(float& x, float& y, float& z) { x = m_combatStartX; y = m_combatStartY; z = m_combatStartZ; }
+        void GetCombatStartPosition(float& x, float& y, float& z) const { x = m_combatStartX; y = m_combatStartY; z = m_combatStartZ; }
 
         void SetRespawnCoord(CreatureCreatePos const& pos) { m_respawnPos = pos.m_pos; }
         void SetRespawnCoord(float x, float y, float z, float ori) { m_respawnPos.x = x; m_respawnPos.y = y; m_respawnPos.z = z; m_respawnPos.o = ori; }
@@ -739,9 +742,9 @@ class MANGOS_DLL_SPEC Creature : public Unit
 
         void SetFactionTemporary(uint32 factionId, uint32 tempFactionFlags = TEMPFACTION_ALL);
         void ClearTemporaryFaction();
-        uint32 GetTemporaryFactionFlags() { return m_temporaryFactionFlags; }
+        uint32 GetTemporaryFactionFlags() const { return m_temporaryFactionFlags; }
 
-        void SendAreaSpiritHealerQueryOpcode(Player* pl);
+        void SendAreaSpiritHealerQueryOpcode(Player* pl) const;
 
         void SetVirtualItem(VirtualItemSlot slot, uint32 item_id) { SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + slot, item_id); }
 
@@ -756,8 +759,6 @@ class MANGOS_DLL_SPEC Creature : public Unit
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;
-
-        void _RealtimeSetCreatureInfo();
 
         uint32 m_lootMoney;
         ObjectGuid m_lootRecipientGuid;                     // player who will have rights for looting if m_lootGroupRecipient==0 or group disbanded
@@ -782,7 +783,6 @@ class MANGOS_DLL_SPEC Creature : public Unit
         // below fields has potential for optimization
         bool m_AlreadyCallAssistance;
         bool m_AlreadySearchedAssistance;
-        bool m_AI_locked;
         bool m_isDeadByDefault;
         uint32 m_temporaryFactionFlags;                     // used for real faction changes (not auras etc)
 
@@ -796,6 +796,7 @@ class MANGOS_DLL_SPEC Creature : public Unit
         Position m_respawnPos;
 
         bool DisableReputationGain;
+        CreatureAI* m_ai;
 
     private:
         GridReference<Creature> m_gridRef;

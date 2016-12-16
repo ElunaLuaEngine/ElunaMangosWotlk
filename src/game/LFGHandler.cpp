@@ -20,8 +20,7 @@
 #include "Log.h"
 #include "Player.h"
 #include "WorldPacket.h"
-#include "ObjectMgr.h"
-#include "World.h"
+#include "ObjectAccessor.h"
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recv_data)
 {
@@ -64,10 +63,11 @@ void WorldSession::HandleSearchLfgJoinOpcode(WorldPacket& recv_data)
 {
     DEBUG_LOG("CMSG_LFG_SEARCH_JOIN");
 
-    uint32 temp, entry;
-    recv_data >> temp;
+    recv_data >> Unused<uint32>();
+    //uint32 temp, entry;
+    //recv_data >> temp;
 
-    entry = (temp & 0x00FFFFFF);
+    //entry = (temp & 0x00FFFFFF);
     // LfgType type = LfgType((temp >> 24) & 0x000000FF);
 
     // SendLfgSearchResults(type, entry);
@@ -89,7 +89,7 @@ void WorldSession::HandleSetLfgCommentOpcode(WorldPacket& recv_data)
     DEBUG_LOG("LFG comment \"%s\"", comment.c_str());
 }
 
-void WorldSession::SendLfgSearchResults(LfgType type, uint32 entry)
+void WorldSession::SendLfgSearchResults(LfgType type, uint32 entry) const
 {
     WorldPacket data(SMSG_LFG_SEARCH_RESULTS);
     data << uint32(type);                                   // type
@@ -213,10 +213,10 @@ void WorldSession::SendLfgSearchResults(LfgType type, uint32 entry)
         }
     }
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
-void WorldSession::SendLfgJoinResult(LfgJoinResult result)
+void WorldSession::SendLfgJoinResult(LfgJoinResult result) const
 {
     WorldPacket data(SMSG_LFG_JOIN_RESULT, 0);
     data << uint32(result);
@@ -238,10 +238,10 @@ void WorldSession::SendLfgJoinResult(LfgJoinResult result)
         }*/
     }
 
-    SendPacket(&data);
+    SendPacket(data);
 }
 
-void WorldSession::SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 id)
+void WorldSession::SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 id) const
 {
     WorldPacket data(isGroup ? SMSG_LFG_UPDATE_PARTY : SMSG_LFG_UPDATE_PLAYER, 0);
     data << uint8(updateType);
@@ -268,5 +268,5 @@ void WorldSession::SendLfgUpdate(bool isGroup, LfgUpdateType updateType, uint32 
             data << uint32(id);
         data << "";
     }
-    SendPacket(&data);
+    SendPacket(data);
 }

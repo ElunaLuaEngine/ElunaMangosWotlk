@@ -22,6 +22,7 @@
 #include "Database/DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ProgressBar.h"
+#include "SQLStorages.h"
 
 void CharacterDatabaseCleaner::CleanDatabase()
 {
@@ -94,7 +95,7 @@ void CharacterDatabaseCleaner::CheckUnique(const char* column, const char* table
 
 bool CharacterDatabaseCleaner::AchievementProgressCheck(uint32 criteria)
 {
-    return sAchievementCriteriaStore.LookupEntry(criteria);
+    return !!sAchievementCriteriaStore.LookupEntry(criteria);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterAchievementProgress()
@@ -104,7 +105,7 @@ void CharacterDatabaseCleaner::CleanCharacterAchievementProgress()
 
 bool CharacterDatabaseCleaner::SkillCheck(uint32 skill)
 {
-    return sSkillLineStore.LookupEntry(skill);
+    return !!sSkillLineStore.LookupEntry(skill);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterSkills()
@@ -114,7 +115,7 @@ void CharacterDatabaseCleaner::CleanCharacterSkills()
 
 bool CharacterDatabaseCleaner::SpellCheck(uint32 spell_id)
 {
-    return sSpellStore.LookupEntry(spell_id) && !GetTalentSpellPos(spell_id);
+    return sSpellTemplate.LookupEntry<SpellEntry>(spell_id) && !GetTalentSpellPos(spell_id);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterSpell()
@@ -128,7 +129,7 @@ bool CharacterDatabaseCleaner::TalentCheck(uint32 talent_id)
     if (!talentInfo)
         return false;
 
-    return sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+    return !!sTalentTabStore.LookupEntry(talentInfo->TalentTab);
 }
 
 void CharacterDatabaseCleaner::CleanCharacterTalent()

@@ -27,7 +27,6 @@
 #include "ObjectMgr.h"
 #include "ObjectGuid.h"
 #include "Player.h"
-#include "UpdateMask.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "AccountMgr.h"
@@ -858,9 +857,10 @@ ChatCommand* ChatHandler::getCommandTable()
     return commandTable;
 }
 
-ChatHandler::ChatHandler(WorldSession* session) : m_session(session) {}
+ChatHandler::ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false)
+{}
 
-ChatHandler::ChatHandler(Player* player) : m_session(player->GetSession()) {}
+ChatHandler::ChatHandler(Player* player) : m_session(player->GetSession()), sentErrorMessage(false) {}
 
 ChatHandler::~ChatHandler() {}
 
@@ -940,7 +940,7 @@ bool ChatHandler::HasLowerSecurityAccount(WorldSession* target, uint32 target_ac
     return false;
 }
 
-bool ChatHandler::hasStringAbbr(const char* name, const char* part)
+bool ChatHandler::hasStringAbbr(const char* name, const char* part) const
 {
     // non "" command
     if (*name)
@@ -976,13 +976,13 @@ void ChatHandler::SendSysMessage(const char* str)
     while (char* line = LineFromMessage(pos))
     {
         ChatHandler::BuildChatPacket(data, CHAT_MSG_SYSTEM, line, LANG_UNIVERSAL, CHAT_TAG_NONE, m_session->GetPlayer()->GetObjectGuid());
-        m_session->SendPacket(&data);
+        m_session->SendPacket(data);
     }
 
     delete[] buf;
 }
 
-void ChatHandler::SendGlobalSysMessage(const char* str)
+void ChatHandler::SendGlobalSysMessage(const char* str) const
 {
     // Chat output
     WorldPacket data;
@@ -995,7 +995,7 @@ void ChatHandler::SendGlobalSysMessage(const char* str)
     while (char* line = LineFromMessage(pos))
     {
         ChatHandler::BuildChatPacket(data, CHAT_MSG_SYSTEM, line, LANG_UNIVERSAL, CHAT_TAG_NONE, guid);
-        sWorld.SendGlobalMessage(&data);
+        sWorld.SendGlobalMessage(data);
     }
 
     delete[] buf;
@@ -1027,7 +1027,7 @@ void ChatHandler::PSendSysMessage(const char* format, ...)
     SendSysMessage(str);
 }
 
-void ChatHandler::CheckIntegrity(ChatCommand* table, ChatCommand* parentCommand)
+void ChatHandler::CheckIntegrity(ChatCommand* table, ChatCommand* parentCommand) const
 {
     for (uint32 i = 0; table[i].Name != nullptr; ++i)
     {
@@ -1114,7 +1114,7 @@ ChatCommand const* ChatHandler::FindCommand(char const* text)
  *                              parentCommand have parent of command in command arg or nullptr
  *                              cmdNamePtr store command name that not found as it extracted from command line
  */
-ChatCommandSearchResult ChatHandler::FindCommand(ChatCommand* table, char const*& text, ChatCommand*& command, ChatCommand** parentCommand /*= nullptr*/, std::string* cmdNamePtr /*= nullptr*/, bool allAvailable /*= false*/, bool exactlyName /*= false*/)
+ChatCommandSearchResult ChatHandler::FindCommand(ChatCommand* table, char const*& text, ChatCommand*& command, ChatCommand** parentCommand /*= nullptr*/, std::string* cmdNamePtr /*= nullptr*/, bool allAvailable /*= false*/, bool exactlyName /*= false*/) const
 {
     std::string cmd = "";
 
@@ -1450,7 +1450,7 @@ bool ChatHandler::ShowHelpForCommand(ChatCommand* table, const char* cmd)
     return command || childCommands;
 }
 
-bool ChatHandler::isValidChatMessage(const char* message)
+bool ChatHandler::isValidChatMessage(const char* message) const
 {
     /*
 
@@ -1745,7 +1745,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (reader.eof())                       // : must be
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(atoi(buffer));
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(atoi(buffer));
                     if (!linkedSpell)
                         return false;
 
@@ -1772,7 +1772,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (!talentInfo)
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(talentInfo->RankID[0]);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(talentInfo->RankID[0]);
                     if (!linkedSpell)
                         return false;
 
@@ -1799,7 +1799,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                         spellid += c - '0';
                         c = reader.peek();
                     }
-                    linkedSpell = sSpellStore.LookupEntry(spellid);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellid);
                     if (!linkedSpell)
                         return false;
                 }
@@ -1818,7 +1818,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                         spellid += c - '0';
                         c = reader.peek();
                     }
-                    linkedSpell = sSpellStore.LookupEntry(spellid);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(spellid);
                     if (!linkedSpell)
                         return false;
                 }
@@ -1868,7 +1868,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
                     if (!glyph)
                         return false;
 
-                    linkedSpell = sSpellStore.LookupEntry(glyph->SpellId);
+                    linkedSpell = sSpellTemplate.LookupEntry<SpellEntry>(glyph->SpellId);
 
                     if (!linkedSpell)
                         return false;
@@ -2050,7 +2050,7 @@ bool ChatHandler::isValidChatMessage(const char* message)
     return validSequence == validSequenceIterator;
 }
 
-Player* ChatHandler::getSelectedPlayer()
+Player* ChatHandler::getSelectedPlayer() const
 {
     if (!m_session)
         return nullptr;
@@ -2063,7 +2063,7 @@ Player* ChatHandler::getSelectedPlayer()
     return sObjectMgr.GetPlayer(guid);
 }
 
-Unit* ChatHandler::getSelectedUnit()
+Unit* ChatHandler::getSelectedUnit() const
 {
     if (!m_session)
         return nullptr;
@@ -2077,7 +2077,7 @@ Unit* ChatHandler::getSelectedUnit()
     return ObjectAccessor::GetUnit(*m_session->GetPlayer(), guid);
 }
 
-Creature* ChatHandler::getSelectedCreature()
+Creature* ChatHandler::getSelectedCreature() const
 {
     if (!m_session)
         return nullptr;
@@ -2107,7 +2107,7 @@ void ChatHandler::SkipWhiteSpaces(char** args)
  * @param val  return extracted value if function success, in fail case original value unmodified
  * @return     true if value extraction successful
  */
-bool  ChatHandler::ExtractInt32(char** args, int32& val)
+bool  ChatHandler::ExtractInt32(char** args, int32& val) const
 {
     if (!*args || !** args)
         return false;
@@ -2138,7 +2138,7 @@ bool  ChatHandler::ExtractInt32(char** args, int32& val)
  * @param defVal  default value used if no data for extraction in args
  * @return        true if value extraction successful
  */
-bool  ChatHandler::ExtractOptInt32(char** args, int32& val, int32 defVal)
+bool  ChatHandler::ExtractOptInt32(char** args, int32& val, int32 defVal) const
 {
     if (!*args || !** args)
     {
@@ -2157,7 +2157,7 @@ bool  ChatHandler::ExtractOptInt32(char** args, int32& val, int32 defVal)
  * @param base set used base for extracted value format (10 for decimal, 16 for hex, etc), 0 let auto select by system internal function
  * @return     true if value extraction successful
  */
-bool  ChatHandler::ExtractUInt32Base(char** args, uint32& val, uint32 base)
+bool  ChatHandler::ExtractUInt32Base(char** args, uint32& val, uint32 base) const
 {
     if (!*args || !** args)
         return false;
@@ -2190,7 +2190,7 @@ bool  ChatHandler::ExtractUInt32Base(char** args, uint32& val, uint32 base)
  * @param defVal  default value used if no data for extraction in args
  * @return        true if value extraction successful
  */
-bool  ChatHandler::ExtractOptUInt32(char** args, uint32& val, uint32 defVal)
+bool  ChatHandler::ExtractOptUInt32(char** args, uint32& val, uint32 defVal) const
 {
     if (!*args || !** args)
     {
@@ -2398,7 +2398,7 @@ char* ChatHandler::ExtractQuotedOrLiteralArg(char** args, bool asis /*= false*/)
  * @param val  return extracted value if function success, in fail case original value unmodified
  * @return     true at success
  */
-bool  ChatHandler::ExtractOnOff(char** args, bool& value)
+bool ChatHandler::ExtractOnOff(char** args, bool& value)
 {
     char* arg = ExtractLiteralArg(args);
     if (!arg)
@@ -2510,7 +2510,6 @@ char* ChatHandler::ExtractLinkArg(char** args, char const* const* linkTypes /*= 
 
     // key:data...|h[name]|h|r
     char* keyStart = tail;                                  // remember key start for return
-    char* keyEnd   = tail;                                  // key end for truncate, will updated
 
     while (*tail && *tail != '|' && *tail != ':')
         ++tail;
@@ -2518,7 +2517,7 @@ char* ChatHandler::ExtractLinkArg(char** args, char const* const* linkTypes /*= 
     if (!*tail)
         return nullptr;
 
-    keyEnd = tail;                                          // remember key end for truncate
+    char* keyEnd = tail;                                    // remember key end for truncate
 
     // |h[name]|h|r or :something...|h[name]|h|r
 
@@ -2739,7 +2738,7 @@ bool ChatHandler::ExtractUint32KeyFromLink(char** text, char const* linkType, ui
     return ExtractUInt32(&arg, value);
 }
 
-GameObject* ChatHandler::GetGameObjectWithGuid(uint32 lowguid, uint32 entry)
+GameObject* ChatHandler::GetGameObjectWithGuid(uint32 lowguid, uint32 entry) const
 {
     if (!m_session)
         return nullptr;
@@ -3403,8 +3402,8 @@ bool CliHandler::isAvailable(ChatCommand const& cmd) const
 
 void CliHandler::SendSysMessage(const char* str)
 {
-    m_print(m_callbackArg, str);
-    m_print(m_callbackArg, "\r\n");
+    m_print(str);
+    m_print("\r\n");
 }
 
 std::string CliHandler::GetNameLink() const
@@ -3464,7 +3463,7 @@ void ChatHandler::ShowNpcOrGoSpawnInformation(uint32 guid)
 
 // Prepare ShortString for a NPC or GO (by guid) with pool or game event IDs
 template <typename T>
-std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation(uint32 guid)
+std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation(uint32 guid) const
 {
     std::string str = "";
     if (uint16 pool_id = sPoolMgr.IsPartOfAPool<T>(guid))
@@ -3496,7 +3495,7 @@ std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation(uint32 guid)
     return str;
 }
 
-void ChatHandler::LogCommand(char const* fullcmd)
+void ChatHandler::LogCommand(char const* fullcmd) const
 {
     // chat case
     if (m_session)
@@ -3519,7 +3518,7 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const
                                   ObjectGuid const& targetGuid /*= ObjectGuid()*/, char const* targetName /*= nullptr*/,
                                   char const* channelName /*= nullptr*/, uint32 achievementId /*= 0*/)
 {
-    bool isGM = chatTag & CHAT_TAG_GM;
+    const bool isGM = !!(chatTag & CHAT_TAG_GM);
     bool isAchievement = false;
 
     data.Initialize(isGM ? SMSG_GM_MESSAGECHAT : SMSG_MESSAGECHAT);
@@ -3595,5 +3594,5 @@ void ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg msgtype, char const
 template void ChatHandler::ShowNpcOrGoSpawnInformation<Creature>(uint32 guid);
 template void ChatHandler::ShowNpcOrGoSpawnInformation<GameObject>(uint32 guid);
 
-template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<Creature>(uint32 guid);
-template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<GameObject>(uint32 guid);
+template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<Creature>(uint32 guid) const;
+template std::string ChatHandler::PrepareStringNpcOrGoSpawnInformation<GameObject>(uint32 guid) const;
