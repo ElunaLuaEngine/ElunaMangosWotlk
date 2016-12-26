@@ -81,11 +81,6 @@ ScriptMgr::ScriptMgr() :
     m_scheduledScripts = 0;
 }
 
-ScriptMgr::~ScriptMgr()
-{
-    UnloadScriptLibrary();
-}
-
 // /////////////////////////////////////////////////////////
 //              DB SCRIPTS (loaders of static data)
 // /////////////////////////////////////////////////////////
